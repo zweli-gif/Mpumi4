@@ -1,0 +1,15 @@
+Annual Goals Analysis - Feb 2, 2026
+
+The Annual Goals in Settings page shows:
+- Strategic Objectives: Community Growth (20%), Impact Delivery (25%), New Frontiers (20%), Stewardship (20%), Purpose & Platform (15%)
+- Each objective has 5 KPIs with names like "New Members Acquired", "Member Retention Rate", etc.
+
+However, the database query shows that goalName and strategicObjective fields are EMPTY strings!
+The UI is showing data from local state, not from the database.
+
+The issue: The Settings page is using local state for display but the database has empty goalName values.
+This is why the Weekly page dropdown shows empty options - it's pulling from the database which has empty names.
+
+Solution needed:
+1. The Settings page needs to save goalName and strategicObjective to the database when edited
+2. Or the database needs to be populated with the correct goal names

@@ -1,0 +1,163 @@
+{
+  "query": "SELECT ag.id, ag.goalName, ag.ownerName, ag.targetValue, ag.targetUnit, ag.strategicObjective, so.weight as objective_weight\nFROM annualGoals ag\nLEFT JOIN strategicObjectives so ON ag.strategicObjective = so.name\nORDER BY ag.strategicObjective, ag.goalName;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT ag.id, ag.goalName, ag.ownerName, ag.targetValue, ag.targetUnit, ag.strategicObjective, so.weight as objective_weight\nFROM annualGoals ag\nLEFT JOIN strategicObjectives so ON ag.strategicObjective = so.name\nORDER BY ag.strategicObjective, ag.goalName;",
+  "rows": [
+    {
+      "id": "1",
+      "goalName": "3 IBM Sized Clients (New)",
+      "ownerName": "Zweli",
+      "targetValue": "15000000.00",
+      "targetUnit": "ZAR",
+      "strategicObjective": "Community Growth",
+      "objective_weight": "30"
+    },
+    {
+      "id": "2",
+      "goalName": "Client Proposal Presentations / Meetings",
+      "ownerName": "Brian",
+      "targetValue": "40.00",
+      "targetUnit": "#",
+      "strategicObjective": "Community Growth",
+      "objective_weight": "30"
+    },
+    {
+      "id": "30002",
+      "goalName": "Client reference letters",
+      "ownerName": "Zweli",
+      "targetValue": "5.00",
+      "targetUnit": "#",
+      "strategicObjective": "Community Growth",
+      "objective_weight": "30"
+    },
+    {
+      "id": "3",
+      "goalName": "Reach and Relevance (3 Conference Attendances , 5 Placed Articles or Media Interviews, 12 Newsletters)",
+      "ownerName": "Brian ",
+      "targetValue": "20.00",
+      "targetUnit": "#",
+      "strategicObjective": "Community Growth",
+      "objective_weight": "30"
+    },
+    {
+      "id": "7",
+      "goalName": "On-Time Project Delivery",
+      "ownerName": "Albert",
+      "targetValue": "100.00",
+      "targetUnit": "%",
+      "strategicObjective": "Impact Delivery",
+      "objective_weight": "30"
+    },
+    {
+      "id": "8",
+      "goalName": "Project Documentation",
+      "ownerName": "Albert",
+      "targetValue": "100.00",
+      "targetUnit": "%",
+      "strategicObjective": "Impact Delivery",
+      "objective_weight": "30"
+    },
+    {
+      "id": "6",
+      "goalName": "Project Margin",
+      "ownerName": "Albert",
+      "targetValue": "20.00",
+      "targetUnit": "%",
+      "strategicObjective": "Impact Delivery",
+      "objective_weight": "30"
+    },
+    {
+      "id": "30004",
+      "goalName": "Burn Rate of R200k To Get To First Revenue",
+      "ownerName": "Albert",
+      "targetValue": "400000.00",
+      "targetUnit": "ZAR",
+      "strategicObjective": "New Frontiers",
+      "objective_weight": "15"
+    },
+    {
+      "id": "30003",
+      "goalName": "Ventures Generating Revenue",
+      "ownerName": "Albert",
+      "targetValue": "2.00",
+      "targetUnit": "#",
+      "strategicObjective": "New Frontiers",
+      "objective_weight": "15"
+    },
+    {
+      "id": "30009",
+      "goalName": "Admin Set-Up and Compliance",
+      "ownerName": "Boitumelo",
+      "targetValue": "100.00",
+      "targetUnit": "%",
+      "strategicObjective": "Purpose & Platform",
+      "objective_weight": "15"
+    },
+    {
+      "id": "60001",
+      "goalName": "Compelling Non-Remuneration Staff Value Proposition (Quarterly Survey)",
+      "ownerName": "Boitumelo",
+      "targetValue": "80.00",
+      "targetUnit": "%",
+      "strategicObjective": "Purpose & Platform",
+      "objective_weight": "15"
+    },
+    {
+      "id": "30010",
+      "goalName": "IT Build, Run & Operations (Per Agreed Roll-Out Plan)",
+      "ownerName": "Albert",
+      "targetValue": "100.00",
+      "targetUnit": "%",
+      "strategicObjective": "Purpose & Platform",
+      "objective_weight": "15"
+    },
+    {
+      "id": "60002",
+      "goalName": "Robust Contract Management (Customers and Suppliers)",
+      "ownerName": "Boitumelo",
+      "targetValue": "100.00",
+      "targetUnit": "%",
+      "strategicObjective": "Purpose & Platform",
+      "objective_weight": "15"
+    },
+    {
+      "id": "30007",
+      "goalName": "Cash and Cash Equivalents ",
+      "ownerName": "Kervin",
+      "targetValue": "1000000.00",
+      "targetUnit": "ZAR",
+      "strategicObjective": "Stewardship",
+      "objective_weight": "10"
+    },
+    {
+      "id": "30006",
+      "goalName": "Grant Funding (Cash and Kind)",
+      "ownerName": "Kervin",
+      "targetValue": "2000000.00",
+      "targetUnit": "ZAR",
+      "strategicObjective": "Stewardship",
+      "objective_weight": "10"
+    },
+    {
+      "id": "30008",
+      "goalName": "Overdue Tax Liability Reduction",
+      "ownerName": "Kervin",
+      "targetValue": "0.00",
+      "targetUnit": "ZAR",
+      "strategicObjective": "Stewardship",
+      "objective_weight": "10"
+    },
+    {
+      "id": "30005",
+      "goalName": "Payment Turn Around Time From Timesheet (15 days)",
+      "ownerName": "Kervin",
+      "targetValue": "15.00",
+      "targetUnit": "#",
+      "strategicObjective": "Stewardship",
+      "objective_weight": "10"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tgoalName\townerName\ttargetValue\ttargetUnit\tstrategicObjective\tobjective_weight\n1\t3 IBM Sized Clients (New)\tZweli\t15000000.00\tZAR\tCommunity Growth\t30\n2\tClient Proposal Presentations / Meetings\tBrian\t40.00\t#\tCommunity Growth\t30\n30002\tClient reference letters\tZweli\t5.00\t#\tCommunity Growth\t30\n3\tReach and Relevance (3 Conference Attendances , 5 Placed Articles or Media Interviews, 12 Newsletters)\tBrian \t20.00\t#\tCommunity Growth\t30\n7\tOn-Time Project Delivery\tAlbert\t100.00\t%\tImpact Delivery\t30\n8\tProject Documentation\tAlbert\t100.00\t%\tImpact Delivery\t30\n6\tProject Margin\tAlbert\t20.00\t%\tImpact Delivery\t30\n30004\tBurn Rate of R200k To Get To First Revenue\tAlbert\t400000.00\tZAR\tNew Frontiers\t15\n30003\tVentures Generating Revenue\tAlbert\t2.00\t#\tNew Frontiers\t15\n30009\tAdmin Set-Up and Compliance\tBoitumelo\t100.00\t%\tPurpose & Platform\t15\n60001\tCompelling Non-Remuneration Staff Value Proposition (Quarterly Survey)\tBoitumelo\t80.00\t%\tPurpose & Platform\t15\n30010\tIT Build, Run & Operations (Per Agreed Roll-Out Plan)\tAlbert\t100.00\t%\tPurpose & Platform\t15\n60002\tRobust Contract Management (Customers and Suppliers)\tBoitumelo\t100.00\t%\tPurpose & Platform\t15\n30007\tCash and Cash Equivalents \tKervin\t1000000.00\tZAR\tStewardship\t10\n30006\tGrant Funding (Cash and Kind)\tKervin\t2000000.00\tZAR\tStewardship\t10\n30008\tOverdue Tax Liability Reduction\tKervin\t0.00\tZAR\tStewardship\t10\n30005\tPayment Turn Around Time From Timesheet (15 days)\tKervin\t15.00\t#\tStewardship\t10\n",
+  "stderr": "",
+  "execution_time_ms": 347
+}

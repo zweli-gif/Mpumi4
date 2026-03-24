@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO weeklyActivities (userId, activity, dueDay, status, isPriority, weekNumber, year) VALUES \n(1, 'Complete Q1 financial review', 'Monday', 'pending', 1, 6, 2026),\n(2, 'Finalize client proposal', 'Tuesday', 'pending', 1, 6, 2026),\n(3, 'Review marketing strategy', 'Wednesday', 'pending', 1, 6, 2026),\n(4, 'Prepare board presentation', 'Thursday', 'pending', 1, 6, 2026);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute INSERT INTO weeklyActivities (userId, activity, dueDay, status, isPriority, weekNumber, year) VALUES \n(1, 'Complete Q1 financial review', 'Monday', 'pending', 1, 6, 2026),\n(2, 'Finalize client proposal', 'Tuesday', 'pending', 1, 6, 2026),\n(3, 'Review marketing strategy', 'Wednesday', 'pending', 1, 6, 2026),\n(4, 'Prepare board presentation', 'Thursday', 'pending', 1, 6, 2026);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 380
+}

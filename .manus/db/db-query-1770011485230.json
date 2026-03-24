@@ -1,0 +1,40 @@
+{
+  "query": "SELECT id, name, currentHealthScore FROM users WHERE currentHealthScore IS NOT NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT id, name, currentHealthScore FROM users WHERE currentHealthScore IS NOT NULL;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "Zweli Gwebityala",
+      "currentHealthScore": "75"
+    },
+    {
+      "id": "6",
+      "name": "Zinhle Ndlovu",
+      "currentHealthScore": "85"
+    },
+    {
+      "id": "7",
+      "name": "Thabo Mokoena",
+      "currentHealthScore": "72"
+    },
+    {
+      "id": "8",
+      "name": "Mpumi Dlamini",
+      "currentHealthScore": "80"
+    },
+    {
+      "id": "9",
+      "name": "Naledi Khumalo",
+      "currentHealthScore": "68"
+    },
+    {
+      "id": "10",
+      "name": "Bongani Sithole",
+      "currentHealthScore": "82"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tcurrentHealthScore\n1\tZweli Gwebityala\t75\n6\tZinhle Ndlovu\t85\n7\tThabo Mokoena\t72\n8\tMpumi Dlamini\t80\n9\tNaledi Khumalo\t68\n10\tBongani Sithole\t82\n",
+  "stderr": "",
+  "execution_time_ms": 363
+}

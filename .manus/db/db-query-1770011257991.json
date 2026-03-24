@@ -1,0 +1,17 @@
+{
+  "query": "SELECT id, activity, userId, isPriority, status FROM weeklyActivities WHERE weekNumber = 6 AND year = 2026;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT id, activity, userId, isPriority, status FROM weeklyActivities WHERE weekNumber = 6 AND year = 2026;",
+  "rows": [
+    {
+      "id": "1",
+      "activity": "uw8y89rw",
+      "userId": "1",
+      "isPriority": "1",
+      "status": "pending"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tactivity\tuserId\tisPriority\tstatus\n1\tuw8y89rw\t1\t1\tpending\n",
+  "stderr": "",
+  "execution_time_ms": 361
+}

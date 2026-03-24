@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, activity, monthlyGoalId FROM weeklyActivities LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT id, activity, monthlyGoalId FROM weeklyActivities LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "activity": "uw8y89rw",
+      "monthlyGoalId": "NULL"
+    },
+    {
+      "id": "30001",
+      "activity": "Complete Q1 financial review",
+      "monthlyGoalId": "2"
+    },
+    {
+      "id": "30002",
+      "activity": "Finalize client proposal",
+      "monthlyGoalId": "NULL"
+    },
+    {
+      "id": "30003",
+      "activity": "Review marketing strategy",
+      "monthlyGoalId": "NULL"
+    },
+    {
+      "id": "30004",
+      "activity": "Prepare board presentation",
+      "monthlyGoalId": "NULL"
+    },
+    {
+      "id": "30005",
+      "activity": "yuft7yugft8t6t7y",
+      "monthlyGoalId": "NULL"
+    },
+    {
+      "id": "60001",
+      "activity": "ytr67tgf",
+      "monthlyGoalId": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tactivity\tmonthlyGoalId\n1\tuw8y89rw\tNULL\n30001\tComplete Q1 financial review\t2\n30002\tFinalize client proposal\tNULL\n30003\tReview marketing strategy\tNULL\n30004\tPrepare board presentation\tNULL\n30005\tyuft7yugft8t6t7y\tNULL\n60001\tytr67tgf\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 359
+}

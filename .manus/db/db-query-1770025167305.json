@@ -1,0 +1,58 @@
+{
+  "query": "SELECT id, name, email, role, currentHealthScore, createdAt FROM users ORDER BY email;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT id, name, email, role, currentHealthScore, createdAt FROM users ORDER BY email;",
+  "rows": [
+    {
+      "id": "510028",
+      "name": "Albert Bensusan",
+      "email": "albertbensuan@gmail.com",
+      "role": "admin",
+      "currentHealthScore": "75",
+      "createdAt": "2026-02-02 08:44:58"
+    },
+    {
+      "id": "510035",
+      "name": " Tumi Makgotho",
+      "email": "boitumelomokgotho01@gmail.com",
+      "role": "user",
+      "currentHealthScore": "75",
+      "createdAt": "2026-02-02 08:50:30"
+    },
+    {
+      "id": "540031",
+      "name": "Boitumelo Mokgotho",
+      "email": "boitumelomokgotho01@gmail.com",
+      "role": "user",
+      "currentHealthScore": "75",
+      "createdAt": "2026-02-02 09:21:20"
+    },
+    {
+      "id": "510020",
+      "name": "Brian Dube",
+      "email": "dubebrian001@gmail.com",
+      "role": "user",
+      "currentHealthScore": "75",
+      "createdAt": "2026-02-02 08:42:47"
+    },
+    {
+      "id": "510024",
+      "name": "Kervin Moffat ",
+      "email": "kervin.moffat@gmail.com",
+      "role": "user",
+      "currentHealthScore": "75",
+      "createdAt": "2026-02-02 08:44:06"
+    },
+    {
+      "id": "1",
+      "name": "Zweli Gwebityala",
+      "email": "zweli@gwebityala.com",
+      "role": "admin",
+      "currentHealthScore": "64",
+      "createdAt": "2026-02-01 07:57:01"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\trole\tcurrentHealthScore\tcreatedAt\n510028\tAlbert Bensusan\talbertbensuan@gmail.com\tadmin\t75\t2026-02-02 08:44:58\n510035\t Tumi Makgotho\tboitumelomokgotho01@gmail.com\tuser\t75\t2026-02-02 08:50:30\n540031\tBoitumelo Mokgotho\tboitumelomokgotho01@gmail.com\tuser\t75\t2026-02-02 09:21:20\n510020\tBrian Dube\tdubebrian001@gmail.com\tuser\t75\t2026-02-02 08:42:47\n510024\tKervin Moffat \tkervin.moffat@gmail.com\tuser\t75\t2026-02-02 08:44:06\n1\tZweli Gwebityala\tzweli@gwebityala.com\tadmin\t64\t2026-02-01 07:57:01\n",
+  "stderr": "",
+  "execution_time_ms": 357
+}

@@ -1,0 +1,38 @@
+{
+  "query": "SELECT id, description FROM weeklyPriorities LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT id, description FROM weeklyPriorities LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "description": "Close Vodacom deal (R400K)"
+    },
+    {
+      "id": "2",
+      "description": "Finalize IFC Agriculture proposal"
+    },
+    {
+      "id": "3",
+      "description": "Launch Briansfomo MVP"
+    },
+    {
+      "id": "4",
+      "description": "Submit VAT Return"
+    },
+    {
+      "id": "5",
+      "description": "Update contractor agreements"
+    },
+    {
+      "id": "6",
+      "description": "Complete Nedbank design sprint"
+    },
+    {
+      "id": "7",
+      "description": "Prepare Q1 financial report"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tdescription\n1\tClose Vodacom deal (R400K)\n2\tFinalize IFC Agriculture proposal\n3\tLaunch Briansfomo MVP\n4\tSubmit VAT Return\n5\tUpdate contractor agreements\n6\tComplete Nedbank design sprint\n7\tPrepare Q1 financial report\n",
+  "stderr": "",
+  "execution_time_ms": 365
+}

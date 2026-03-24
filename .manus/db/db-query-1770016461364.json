@@ -1,0 +1,118 @@
+{
+  "query": "SELECT mt.id, mt.goalId, mt.month, mt.targetValue, mt.actualValue, ag.goalName, ag.strategicObjective FROM monthlyTargets mt JOIN annualGoals ag ON mt.goalId = ag.id WHERE mt.year = 2026 ORDER BY ag.strategicObjective, mt.goalId, mt.month LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT mt.id, mt.goalId, mt.month, mt.targetValue, mt.actualValue, ag.goalName, ag.strategicObjective FROM monthlyTargets mt JOIN annualGoals ag ON mt.goalId = ag.id WHERE mt.year = 2026 ORDER BY ag.strategicObjective, mt.goalId, mt.month LIMIT 30;",
+  "rows": [
+    {
+      "id": "1",
+      "goalId": "1",
+      "month": "1",
+      "targetValue": "1500000.00",
+      "actualValue": "1800000.00",
+      "goalName": "New Members Acquired",
+      "strategicObjective": "Community Growth"
+    },
+    {
+      "id": "2",
+      "goalId": "1",
+      "month": "2",
+      "targetValue": "1500000.00",
+      "actualValue": "0.00",
+      "goalName": "New Members Acquired",
+      "strategicObjective": "Community Growth"
+    },
+    {
+      "id": "3",
+      "goalId": "1",
+      "month": "3",
+      "targetValue": "2200800.00",
+      "actualValue": "0.00",
+      "goalName": "New Members Acquired",
+      "strategicObjective": "Community Growth"
+    },
+    {
+      "id": "4",
+      "goalId": "1",
+      "month": "4",
+      "targetValue": "2200800.00",
+      "actualValue": "0.00",
+      "goalName": "New Members Acquired",
+      "strategicObjective": "Community Growth"
+    },
+    {
+      "id": "5",
+      "goalId": "1",
+      "month": "5",
+      "targetValue": "1800000.00",
+      "actualValue": "0.00",
+      "goalName": "New Members Acquired",
+      "strategicObjective": "Community Growth"
+    },
+    {
+      "id": "6",
+      "goalId": "1",
+      "month": "6",
+      "targetValue": "1800000.00",
+      "actualValue": "0.00",
+      "goalName": "New Members Acquired",
+      "strategicObjective": "Community Growth"
+    },
+    {
+      "id": "7",
+      "goalId": "1",
+      "month": "7",
+      "targetValue": "2500800.00",
+      "actualValue": "0.00",
+      "goalName": "New Members Acquired",
+      "strategicObjective": "Community Growth"
+    },
+    {
+      "id": "8",
+      "goalId": "1",
+      "month": "8",
+      "targetValue": "2500800.00",
+      "actualValue": "0.00",
+      "goalName": "New Members Acquired",
+      "strategicObjective": "Community Growth"
+    },
+    {
+      "id": "9",
+      "goalId": "1",
+      "month": "9",
+      "targetValue": "2299200.00",
+      "actualValue": "0.00",
+      "goalName": "New Members Acquired",
+      "strategicObjective": "Community Growth"
+    },
+    {
+      "id": "10",
+      "goalId": "1",
+      "month": "10",
+      "targetValue": "2299200.00",
+      "actualValue": "0.00",
+      "goalName": "New Members Acquired",
+      "strategicObjective": "Community Growth"
+    },
+    {
+      "id": "11",
+      "goalId": "1",
+      "month": "11",
+      "targetValue": "1600800.00",
+      "actualValue": "0.00",
+      "goalName": "New Members Acquired",
+      "strategicObjective": "Community Growth"
+    },
+    {
+      "id": "12",
+      "goalId": "1",
+      "month": "12",
+      "targetValue": "1600800.00",
+      "actualValue": "0.00",
+      "goalName": "New Members Acquired",
+      "strategicObjective": "Community Growth"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tgoalId\tmonth\ttargetValue\tactualValue\tgoalName\tstrategicObjective\n1\t1\t1\t1500000.00\t1800000.00\tNew Members Acquired\tCommunity Growth\n2\t1\t2\t1500000.00\t0.00\tNew Members Acquired\tCommunity Growth\n3\t1\t3\t2200800.00\t0.00\tNew Members Acquired\tCommunity Growth\n4\t1\t4\t2200800.00\t0.00\tNew Members Acquired\tCommunity Growth\n5\t1\t5\t1800000.00\t0.00\tNew Members Acquired\tCommunity Growth\n6\t1\t6\t1800000.00\t0.00\tNew Members Acquired\tCommunity Growth\n7\t1\t7\t2500800.00\t0.00\tNew Members Acquired\tCommunity Growth\n8\t1\t8\t2500800.00\t0.00\tNew Members Acquired\tCommunity Growth\n9\t1\t9\t2299200.00\t0.00\tNew Members Acquired\tCommunity Growth\n10\t1\t10\t2299200.00\t0.00\tNew Members Acquired\tCommunity Growth\n11\t1\t11\t1600800.00\t0.00\tNew Members Acquired\tCommunity Growth\n12\t1\t12\t1600800.00\t0.00\tNew Members Acquired\tCommunity Growth\n",
+  "stderr": "",
+  "execution_time_ms": 344
+}

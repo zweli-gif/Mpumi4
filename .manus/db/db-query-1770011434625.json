@@ -1,0 +1,55 @@
+{
+  "query": "SELECT id, activity, userId, isPriority, status, weekNumber, year FROM weeklyActivities WHERE isPriority = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT id, activity, userId, isPriority, status, weekNumber, year FROM weeklyActivities WHERE isPriority = 1;",
+  "rows": [
+    {
+      "id": "1",
+      "activity": "uw8y89rw",
+      "userId": "1",
+      "isPriority": "1",
+      "status": "pending",
+      "weekNumber": "6",
+      "year": "2026"
+    },
+    {
+      "id": "30001",
+      "activity": "Complete Q1 financial review",
+      "userId": "1",
+      "isPriority": "1",
+      "status": "pending",
+      "weekNumber": "6",
+      "year": "2026"
+    },
+    {
+      "id": "30002",
+      "activity": "Finalize client proposal",
+      "userId": "2",
+      "isPriority": "1",
+      "status": "pending",
+      "weekNumber": "6",
+      "year": "2026"
+    },
+    {
+      "id": "30003",
+      "activity": "Review marketing strategy",
+      "userId": "3",
+      "isPriority": "1",
+      "status": "pending",
+      "weekNumber": "6",
+      "year": "2026"
+    },
+    {
+      "id": "30004",
+      "activity": "Prepare board presentation",
+      "userId": "4",
+      "isPriority": "1",
+      "status": "pending",
+      "weekNumber": "6",
+      "year": "2026"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tactivity\tuserId\tisPriority\tstatus\tweekNumber\tyear\n1\tuw8y89rw\t1\t1\tpending\t6\t2026\n30001\tComplete Q1 financial review\t1\t1\tpending\t6\t2026\n30002\tFinalize client proposal\t2\t1\tpending\t6\t2026\n30003\tReview marketing strategy\t3\t1\tpending\t6\t2026\n30004\tPrepare board presentation\t4\t1\tpending\t6\t2026\n",
+  "stderr": "",
+  "execution_time_ms": 359
+}

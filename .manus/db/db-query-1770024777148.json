@@ -1,0 +1,52 @@
+{
+  "query": "SELECT id, name, email, currentHealthScore FROM users ORDER BY name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT id, name, email, currentHealthScore FROM users ORDER BY name;",
+  "rows": [
+    {
+      "id": "510035",
+      "name": " Tumi Makgotho",
+      "email": "boitumelomokgotho01@gmail.com",
+      "currentHealthScore": "75"
+    },
+    {
+      "id": "510028",
+      "name": "Albert Bensusan",
+      "email": "albertbensuan@gmail.com",
+      "currentHealthScore": "75"
+    },
+    {
+      "id": "540031",
+      "name": "Boitumelo Mokgotho",
+      "email": "boitumelomokgotho01@gmail.com",
+      "currentHealthScore": "75"
+    },
+    {
+      "id": "510020",
+      "name": "Brian Dube",
+      "email": "dubebrian001@gmail.com",
+      "currentHealthScore": "75"
+    },
+    {
+      "id": "540021",
+      "name": "Brian Dube",
+      "email": "dubebrian001@gmail.com",
+      "currentHealthScore": "50"
+    },
+    {
+      "id": "510024",
+      "name": "Kervin Moffat ",
+      "email": "kervin.moffat@gmail.com",
+      "currentHealthScore": "75"
+    },
+    {
+      "id": "1",
+      "name": "Zweli Gwebityala",
+      "email": "zweli@gwebityala.com",
+      "currentHealthScore": "64"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tcurrentHealthScore\n510035\t Tumi Makgotho\tboitumelomokgotho01@gmail.com\t75\n510028\tAlbert Bensusan\talbertbensuan@gmail.com\t75\n540031\tBoitumelo Mokgotho\tboitumelomokgotho01@gmail.com\t75\n510020\tBrian Dube\tdubebrian001@gmail.com\t75\n540021\tBrian Dube\tdubebrian001@gmail.com\t50\n510024\tKervin Moffat \tkervin.moffat@gmail.com\t75\n1\tZweli Gwebityala\tzweli@gwebityala.com\t64\n",
+  "stderr": "",
+  "execution_time_ms": 354
+}

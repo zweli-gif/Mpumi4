@@ -1,0 +1,45 @@
+{
+  "query": "SELECT id, name, email FROM users ORDER BY name, id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT id, name, email FROM users ORDER BY name, id;",
+  "rows": [
+    {
+      "id": "510035",
+      "name": " Tumi Makgotho",
+      "email": "boitumelomokgotho01@gmail.com"
+    },
+    {
+      "id": "510028",
+      "name": "Albert Bensusan",
+      "email": "albertbensuan@gmail.com"
+    },
+    {
+      "id": "540031",
+      "name": "Boitumelo Mokgotho",
+      "email": "boitumelomokgotho01@gmail.com"
+    },
+    {
+      "id": "510020",
+      "name": "Brian Dube",
+      "email": "dubebrian001@gmail.com"
+    },
+    {
+      "id": "540021",
+      "name": "Brian Dube",
+      "email": "dubebrian001@gmail.com"
+    },
+    {
+      "id": "510024",
+      "name": "Kervin Moffat ",
+      "email": "kervin.moffat@gmail.com"
+    },
+    {
+      "id": "1",
+      "name": "Zweli Gwebityala",
+      "email": "zweli@gwebityala.com"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\n510035\t Tumi Makgotho\tboitumelomokgotho01@gmail.com\n510028\tAlbert Bensusan\talbertbensuan@gmail.com\n540031\tBoitumelo Mokgotho\tboitumelomokgotho01@gmail.com\n510020\tBrian Dube\tdubebrian001@gmail.com\n540021\tBrian Dube\tdubebrian001@gmail.com\n510024\tKervin Moffat \tkervin.moffat@gmail.com\n1\tZweli Gwebityala\tzweli@gwebityala.com\n",
+  "stderr": "",
+  "execution_time_ms": 346
+}

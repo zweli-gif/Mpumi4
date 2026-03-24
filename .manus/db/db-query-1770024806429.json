@@ -1,0 +1,24 @@
+{
+  "query": "SELECT id, name, email, currentHealthScore, createdAt FROM users WHERE name LIKE '%Brian%' ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT id, name, email, currentHealthScore, createdAt FROM users WHERE name LIKE '%Brian%' ORDER BY id;",
+  "rows": [
+    {
+      "id": "510020",
+      "name": "Brian Dube",
+      "email": "dubebrian001@gmail.com",
+      "currentHealthScore": "75",
+      "createdAt": "2026-02-02 08:42:47"
+    },
+    {
+      "id": "540021",
+      "name": "Brian Dube",
+      "email": "dubebrian001@gmail.com",
+      "currentHealthScore": "50",
+      "createdAt": "2026-02-02 09:19:31"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\temail\tcurrentHealthScore\tcreatedAt\n510020\tBrian Dube\tdubebrian001@gmail.com\t75\t2026-02-02 08:42:47\n540021\tBrian Dube\tdubebrian001@gmail.com\t50\t2026-02-02 09:19:31\n",
+  "stderr": "",
+  "execution_time_ms": 346
+}

@@ -1,0 +1,60 @@
+{
+  "query": "SELECT id, strategicObjective, goalName FROM annualGoals WHERE year = 2026 LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT id, strategicObjective, goalName FROM annualGoals WHERE year = 2026 LIMIT 10;",
+  "rows": [
+    {
+      "id": "1",
+      "strategicObjective": "Community Growth",
+      "goalName": "New Members Acquired"
+    },
+    {
+      "id": "2",
+      "strategicObjective": "Community Growth",
+      "goalName": "Member Retention Rate"
+    },
+    {
+      "id": "3",
+      "strategicObjective": "Community Growth",
+      "goalName": "Community Events Hosted"
+    },
+    {
+      "id": "4",
+      "strategicObjective": "Community Growth",
+      "goalName": "Partnership Deals Signed"
+    },
+    {
+      "id": "5",
+      "strategicObjective": "Community Growth",
+      "goalName": "NPS Score"
+    },
+    {
+      "id": "6",
+      "strategicObjective": "Impact Delivery",
+      "goalName": "Projects Delivered On-Time"
+    },
+    {
+      "id": "7",
+      "strategicObjective": "Impact Delivery",
+      "goalName": "Client Satisfaction Score"
+    },
+    {
+      "id": "8",
+      "strategicObjective": "Impact Delivery",
+      "goalName": "Revenue per Project"
+    },
+    {
+      "id": "9",
+      "strategicObjective": "Impact Delivery",
+      "goalName": "Repeat Client Rate"
+    },
+    {
+      "id": "10",
+      "strategicObjective": "Impact Delivery",
+      "goalName": "Project Margin"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstrategicObjective\tgoalName\n1\tCommunity Growth\tNew Members Acquired\n2\tCommunity Growth\tMember Retention Rate\n3\tCommunity Growth\tCommunity Events Hosted\n4\tCommunity Growth\tPartnership Deals Signed\n5\tCommunity Growth\tNPS Score\n6\tImpact Delivery\tProjects Delivered On-Time\n7\tImpact Delivery\tClient Satisfaction Score\n8\tImpact Delivery\tRevenue per Project\n9\tImpact Delivery\tRepeat Client Rate\n10\tImpact Delivery\tProject Margin\n",
+  "stderr": "",
+  "execution_time_ms": 347
+}

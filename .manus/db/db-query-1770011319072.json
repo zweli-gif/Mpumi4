@@ -1,0 +1,25 @@
+{
+  "query": "SELECT * FROM weeklyActivities WHERE weekNumber = 6 AND year = 2026;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT * FROM weeklyActivities WHERE weekNumber = 6 AND year = 2026;",
+  "rows": [
+    {
+      "id": "1",
+      "userId": "1",
+      "activity": "uw8y89rw",
+      "dueDay": "Monday",
+      "dependency": "jrhuiew",
+      "accountabilityPartnerId": "7",
+      "monthlyGoalId": "NULL",
+      "status": "pending",
+      "weekNumber": "6",
+      "year": "2026",
+      "createdAt": "2026-02-02 04:33:06",
+      "updatedAt": "2026-02-02 05:45:50",
+      "isPriority": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tuserId\tactivity\tdueDay\tdependency\taccountabilityPartnerId\tmonthlyGoalId\tstatus\tweekNumber\tyear\tcreatedAt\tupdatedAt\tisPriority\n1\t1\tuw8y89rw\tMonday\tjrhuiew\t7\tNULL\tpending\t6\t2026\t2026-02-02 04:33:06\t2026-02-02 05:45:50\t1\n",
+  "stderr": "",
+  "execution_time_ms": 352
+}

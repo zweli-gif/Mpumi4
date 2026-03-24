@@ -1,0 +1,90 @@
+{
+  "query": "SELECT id, strategicObjective, goalName, targetValue, targetUnit, ownerName FROM annualGoals WHERE year = 2026 ORDER BY strategicObjective, id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT id, strategicObjective, goalName, targetValue, targetUnit, ownerName FROM annualGoals WHERE year = 2026 ORDER BY strategicObjective, id;",
+  "rows": [
+    {
+      "id": "1",
+      "strategicObjective": "Community Growth",
+      "goalName": "New Members Acquired",
+      "targetValue": "24000000.00",
+      "targetUnit": "ZAR",
+      "ownerName": "NULL"
+    },
+    {
+      "id": "2",
+      "strategicObjective": "Community Growth",
+      "goalName": "Member Retention Rate",
+      "targetValue": "12.00",
+      "targetUnit": "count",
+      "ownerName": "NULL"
+    },
+    {
+      "id": "3",
+      "strategicObjective": "Community Growth",
+      "goalName": "Community Events Hosted",
+      "targetValue": "3.00",
+      "targetUnit": "count",
+      "ownerName": "NULL"
+    },
+    {
+      "id": "4",
+      "strategicObjective": "Community Growth",
+      "goalName": "Partnership Deals Signed",
+      "targetValue": "5.00",
+      "targetUnit": "count",
+      "ownerName": "NULL"
+    },
+    {
+      "id": "5",
+      "strategicObjective": "Community Growth",
+      "goalName": "NPS Score",
+      "targetValue": "20.00",
+      "targetUnit": "count",
+      "ownerName": "NULL"
+    },
+    {
+      "id": "6",
+      "strategicObjective": "Impact Delivery",
+      "goalName": "Projects Delivered On-Time",
+      "targetValue": "500000.00",
+      "targetUnit": "ZAR",
+      "ownerName": "NULL"
+    },
+    {
+      "id": "7",
+      "strategicObjective": "Impact Delivery",
+      "goalName": "Client Satisfaction Score",
+      "targetValue": "25.00",
+      "targetUnit": "percentage",
+      "ownerName": "NULL"
+    },
+    {
+      "id": "8",
+      "strategicObjective": "Impact Delivery",
+      "goalName": "Revenue per Project",
+      "targetValue": "8.00",
+      "targetUnit": "count",
+      "ownerName": "NULL"
+    },
+    {
+      "id": "9",
+      "strategicObjective": "Impact Delivery",
+      "goalName": "Repeat Client Rate",
+      "targetValue": "85.00",
+      "targetUnit": "percentage",
+      "ownerName": "NULL"
+    },
+    {
+      "id": "10",
+      "strategicObjective": "Impact Delivery",
+      "goalName": "Project Margin",
+      "targetValue": "100.00",
+      "targetUnit": "percentage",
+      "ownerName": "NULL"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstrategicObjective\tgoalName\ttargetValue\ttargetUnit\townerName\n1\tCommunity Growth\tNew Members Acquired\t24000000.00\tZAR\tNULL\n2\tCommunity Growth\tMember Retention Rate\t12.00\tcount\tNULL\n3\tCommunity Growth\tCommunity Events Hosted\t3.00\tcount\tNULL\n4\tCommunity Growth\tPartnership Deals Signed\t5.00\tcount\tNULL\n5\tCommunity Growth\tNPS Score\t20.00\tcount\tNULL\n6\tImpact Delivery\tProjects Delivered On-Time\t500000.00\tZAR\tNULL\n7\tImpact Delivery\tClient Satisfaction Score\t25.00\tpercentage\tNULL\n8\tImpact Delivery\tRevenue per Project\t8.00\tcount\tNULL\n9\tImpact Delivery\tRepeat Client Rate\t85.00\tpercentage\tNULL\n10\tImpact Delivery\tProject Margin\t100.00\tpercentage\tNULL\n",
+  "stderr": "",
+  "execution_time_ms": 344
+}

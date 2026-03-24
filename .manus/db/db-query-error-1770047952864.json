@@ -1,0 +1,8 @@
+{
+  "query": "SELECT ag.id, ag.name as kpi_name, ag.owner, ag.targetValue, ag.unit, so.name as objective_name, so.weight as objective_weight\nFROM annualGoals ag\nLEFT JOIN strategicObjectives so ON ag.strategicObjective = so.name\nORDER BY so.name, ag.name;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT ag.id, ag.name as kpi_name, ag.owner, ag.targetValue, ag.unit, so.name as objective_name, so.weight as objective_weight\nFROM annualGoals ag\nLEFT JOIN strategicObjectives so ON ag.strategicObjective = so.name\nORDER BY so.name, ag.name;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'ag.name' in 'order clause'"
+  ]
+}

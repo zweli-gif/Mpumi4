@@ -1,0 +1,14 @@
+{
+  "query": "SELECT name, COUNT(*) as cnt FROM users GROUP BY name HAVING cnt > 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT name, COUNT(*) as cnt FROM users GROUP BY name HAVING cnt > 1;",
+  "rows": [
+    {
+      "name": "Brian Dube",
+      "cnt": "2"
+    }
+  ],
+  "messages": [],
+  "stdout": "name\tcnt\nBrian Dube\t2\n",
+  "stderr": "",
+  "execution_time_ms": 347
+}

@@ -1,0 +1,59 @@
+{
+  "query": "SELECT id, openId, name, email, createdAt FROM users ORDER BY email, createdAt;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT id, openId, name, email, createdAt FROM users ORDER BY email, createdAt;",
+  "rows": [
+    {
+      "id": "510028",
+      "openId": "invited_1770021898202_v1tbpa",
+      "name": "Albert Bensusan",
+      "email": "albertbensuan@gmail.com",
+      "createdAt": "2026-02-02 08:44:58"
+    },
+    {
+      "id": "540143",
+      "openId": "BqkCyDkhQPabHGX4LU2pGq",
+      "name": "Albert Bensusan",
+      "email": "albertbensusan@gmail.com",
+      "createdAt": "2026-02-02 10:14:10"
+    },
+    {
+      "id": "540031",
+      "openId": "CD6UpiuPVzH7mm4ajhUpQE",
+      "name": "Boitumelo Mokgotho",
+      "email": "boitumelomokgotho01@gmail.com",
+      "createdAt": "2026-02-02 09:21:20"
+    },
+    {
+      "id": "510020",
+      "openId": "invited_1770021767046_2ijdmv",
+      "name": "Brian Dube",
+      "email": "dubebrian001@gmail.com",
+      "createdAt": "2026-02-02 08:42:47"
+    },
+    {
+      "id": "540205",
+      "openId": "Pq9BGLWwFdGFtvhm2oys29",
+      "name": "Brian Dube",
+      "email": "dubebrian001@gmail.com",
+      "createdAt": "2026-02-02 10:38:04"
+    },
+    {
+      "id": "510024",
+      "openId": "invited_1770021846023_tpk9p",
+      "name": "Kervin Moffat ",
+      "email": "kervin.moffat@gmail.com",
+      "createdAt": "2026-02-02 08:44:06"
+    },
+    {
+      "id": "1",
+      "openId": "Z23LvcjppnL6FMgfcGMNML",
+      "name": "Zweli Gwebityala",
+      "email": "zweli@gwebityala.com",
+      "createdAt": "2026-02-01 07:57:01"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\topenId\tname\temail\tcreatedAt\n510028\tinvited_1770021898202_v1tbpa\tAlbert Bensusan\talbertbensuan@gmail.com\t2026-02-02 08:44:58\n540143\tBqkCyDkhQPabHGX4LU2pGq\tAlbert Bensusan\talbertbensusan@gmail.com\t2026-02-02 10:14:10\n540031\tCD6UpiuPVzH7mm4ajhUpQE\tBoitumelo Mokgotho\tboitumelomokgotho01@gmail.com\t2026-02-02 09:21:20\n510020\tinvited_1770021767046_2ijdmv\tBrian Dube\tdubebrian001@gmail.com\t2026-02-02 08:42:47\n540205\tPq9BGLWwFdGFtvhm2oys29\tBrian Dube\tdubebrian001@gmail.com\t2026-02-02 10:38:04\n510024\tinvited_1770021846023_tpk9p\tKervin Moffat \tkervin.moffat@gmail.com\t2026-02-02 08:44:06\n1\tZ23LvcjppnL6FMgfcGMNML\tZweli Gwebityala\tzweli@gwebityala.com\t2026-02-01 07:57:01\n",
+  "stderr": "",
+  "execution_time_ms": 362
+}

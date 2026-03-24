@@ -1,0 +1,1 @@
+ALTER TABLE `weeklyActivities` ADD `isPriority` boolean DEFAULT false;

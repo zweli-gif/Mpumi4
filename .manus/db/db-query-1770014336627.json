@@ -1,0 +1,60 @@
+{
+  "query": "SELECT id, strategicObjective, goalName FROM annualGoals WHERE year = 2026;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2WVoNFXx8YRPBD4.root --database JzcMSgtkjzvCc45KUk33Lc --execute SELECT id, strategicObjective, goalName FROM annualGoals WHERE year = 2026;",
+  "rows": [
+    {
+      "id": "1",
+      "strategicObjective": "",
+      "goalName": ""
+    },
+    {
+      "id": "2",
+      "strategicObjective": "",
+      "goalName": ""
+    },
+    {
+      "id": "3",
+      "strategicObjective": "",
+      "goalName": ""
+    },
+    {
+      "id": "4",
+      "strategicObjective": "",
+      "goalName": ""
+    },
+    {
+      "id": "5",
+      "strategicObjective": "",
+      "goalName": ""
+    },
+    {
+      "id": "6",
+      "strategicObjective": "",
+      "goalName": ""
+    },
+    {
+      "id": "7",
+      "strategicObjective": "",
+      "goalName": ""
+    },
+    {
+      "id": "8",
+      "strategicObjective": "",
+      "goalName": ""
+    },
+    {
+      "id": "9",
+      "strategicObjective": "",
+      "goalName": ""
+    },
+    {
+      "id": "10",
+      "strategicObjective": "",
+      "goalName": ""
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tstrategicObjective\tgoalName\n1\t\t\n2\t\t\n3\t\t\n4\t\t\n5\t\t\n6\t\t\n7\t\t\n8\t\t\n9\t\t\n10\t\t\n",
+  "stderr": "",
+  "execution_time_ms": 345
+}
