@@ -1,1 +1,1 @@
-ALTER TABLE `weeklyActivities` ADD `partnerRole` enum('partner','helper');
+ALTER TABLE `weeklyActivities` ADD COLUMN `partnerRole` TEXT;

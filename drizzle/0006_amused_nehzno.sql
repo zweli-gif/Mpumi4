@@ -1,4 +1,4 @@
-ALTER TABLE `users` ADD `birthplace` varchar(255);--> statement-breakpoint
-ALTER TABLE `users` ADD `lifePurpose` text;--> statement-breakpoint
-ALTER TABLE `users` ADD `personalGoal` text;--> statement-breakpoint
-ALTER TABLE `users` ADD `skillMastering` text;
+ALTER TABLE `users` ADD COLUMN `birthplace` TEXT;
+ALTER TABLE `users` ADD COLUMN `lifePurpose` TEXT;
+ALTER TABLE `users` ADD COLUMN `personalGoal` TEXT;
+ALTER TABLE `users` ADD COLUMN `skillMastering` TEXT;

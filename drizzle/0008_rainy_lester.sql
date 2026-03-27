@@ -1,2 +1,2 @@
-ALTER TABLE `monthlyTargets` ADD `isLocked` boolean DEFAULT false;--> statement-breakpoint
-ALTER TABLE `monthlyTargets` ADD `performanceStatus` enum('green','amber','red');
+ALTER TABLE `monthlyTargets` ADD COLUMN `isLocked` INTEGER DEFAULT 0;
+ALTER TABLE `monthlyTargets` ADD COLUMN `performanceStatus` TEXT;
