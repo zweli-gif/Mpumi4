@@ -1,3 +1,4 @@
+import { SignIn } from "@clerk/clerk-react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -58,6 +59,9 @@ function Router() {
     <>
     <Switch>
       <Route path={"/onboarding"} component={Onboarding} />
+      <Route path={"/sign-in"}>
+      <SignIn routing="path" path="/sign-in" />
+      </Route>
       <Route path={"/"}>
         <OnboardingGuard><Home /></OnboardingGuard>
       </Route>
