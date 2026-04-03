@@ -11,9 +11,20 @@ export type TrpcContext = {
 export async function createContext({ req, res }: { req: Request; res: Response }): Promise<TrpcContext> {
   let user: User | null = null;
   try {
-    const userId = (req as any).auth?.userId;
+    const auth = (req as any).auth;
+    const userId = auth?.userId;
     if (userId) {
       user = await db.getUserByOpenId(userId);
+      if (!user) {
+        await db.upsertUser({
+          openId: userId,
+          name: null,
+          email: null,
+          loginMethod: "clerk",
+          lastSignedIn: new Date(),
+        });
+        user = await db.getUserByOpenId(userId);
+      }
     }
   } catch (error) {
     user = null;
