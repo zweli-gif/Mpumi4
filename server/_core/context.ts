@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import type { User } from "../../drizzle/schema";
 import * as db from "../db";
+import { createClient } from "@supabase/supabase-js";
 
 export type TrpcContext = {
   req: Request;
@@ -11,19 +12,26 @@ export type TrpcContext = {
 export async function createContext({ req, res }: { req: Request; res: Response }): Promise<TrpcContext> {
   let user: User | null = null;
   try {
-    const auth = (req as any).auth;
-    const userId = auth?.userId;
-    if (userId) {
-      user = await db.getUserByOpenId(userId);
-      if (!user) {
-        await db.upsertUser({
-          openId: userId,
-          name: null,
-          email: null,
-          loginMethod: "clerk",
-          lastSignedIn: new Date(),
-        });
-        user = await db.getUserByOpenId(userId);
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.replace("Bearer ", "");
+    if (token) {
+      const supabase = createClient(
+        process.env.SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      const { data: { user: supabaseUser } } = await supabase.auth.getUser(token);
+      if (supabaseUser) {
+        user = await db.getUserByOpenId(supabaseUser.id);
+        if (!user) {
+          await db.upsertUser({
+            openId: supabaseUser.id,
+            name: supabaseUser.user_metadata?.full_name || null,
+            email: supabaseUser.email || null,
+            loginMethod: supabaseUser.app_metadata?.provider || null,
+            lastSignedIn: new Date(),
+          });
+          user = await db.getUserByOpenId(supabaseUser.id);
+        }
       }
     }
   } catch (error) {

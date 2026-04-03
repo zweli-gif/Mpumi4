@@ -1,7 +1,6 @@
 import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
-import { clerkMiddleware } from "@clerk/express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
@@ -15,13 +14,8 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-  // Clerk middleware
-  app.use(clerkMiddleware());
-
-  // OAuth routes
   registerOAuthRoutes(app);
 
-  // tRPC routes
   app.use(
     "/api/trpc",
     createExpressMiddleware({
@@ -30,14 +24,12 @@ async function startServer() {
     })
   );
 
-  // Frontend handling
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // Railway-compatible port
   const port = process.env.PORT || 3000;
 
   server.listen(port, () => {
