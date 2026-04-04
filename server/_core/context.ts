@@ -21,12 +21,16 @@ export async function createContext({ req, res }: { req: Request; res: Response 
       );
       const { data: { user: supabaseUser } } = await supabase.auth.getUser(token);
       if (supabaseUser) {
+        const email = supabaseUser.email || "";
+        if (!email.endsWith("@thirdspace.africa")) {
+          return { req, res, user: null };
+        }
         user = await db.getUserByOpenId(supabaseUser.id);
         if (!user) {
           await db.upsertUser({
             openId: supabaseUser.id,
             name: supabaseUser.user_metadata?.full_name || null,
-            email: supabaseUser.email || null,
+            email: email,
             loginMethod: supabaseUser.app_metadata?.provider || null,
             lastSignedIn: new Date(),
           });
