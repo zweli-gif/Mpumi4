@@ -15,6 +15,7 @@ export default function Onboarding() {
   const utils = trpc.useUtils();
   
   const [formData, setFormData] = useState({
+    name:"",
     birthplace: "",
     lifePurpose: "",
     personalGoal: "",
@@ -40,6 +41,7 @@ export default function Onboarding() {
     setIsSubmitting(true);
     
     updateProfileMutation.mutate({
+      name: formData.name,
       birthplace: formData.birthplace,
       lifePurpose: formData.lifePurpose,
       personalGoal: formData.personalGoal,
@@ -76,6 +78,20 @@ export default function Onboarding() {
         
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="flex items-center gap-2 text-base">
+                <Sparkles className="h-4 w-4 text-pink-500" />
+                What is your name?
+              </Label>
+              <Input
+                id="name"
+                placeholder="e.g., Mpumi Dlamini"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="text-base"
+                required
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="birthplace" className="flex items-center gap-2 text-base">
                 <MapPin className="h-4 w-4 text-pink-500" />
