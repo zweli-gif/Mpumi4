@@ -1,42 +1,52 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, decimal, boolean, bigint } from "drizzle-orm/mysql-core";
+import { integer, pgEnum, pgTable, text, timestamp, varchar, decimal, boolean, bigint, serial } from "drizzle-orm/pg-core";
 
-/**
- * Core user table backing auth flow.
- * Extended with health tracking fields.
- */
-export const users = mysqlTable("users", {
-  id: int("id").autoincrement().primaryKey(),
+export const roleEnum = pgEnum("role", ["user", "admin"]);
+export const energyLevelEnum = pgEnum("currentEnergyLevel", ["High", "Med", "Low"]);
+export const moodEnum = pgEnum("mood", ["happy", "neutral", "sad"]);
+export const energyEnum = pgEnum("energyLevel", ["High", "Med", "Low"]);
+export const priorityStatusEnum = pgEnum("priority_status", ["pending", "in-progress", "done", "blocked"]);
+export const celebrationCategoryEnum = pgEnum("celebration_category", ["deal", "birthday", "milestone", "project", "personal"]);
+export const pipelineTypeEnum = pgEnum("pipeline_type", ["bd", "ventures", "studio", "clients", "finance", "admin"]);
+export const distributionStrategyEnum = pgEnum("distribution_strategy", ["linear", "custom", "historical", "milestone"]);
+export const performanceStatusEnum = pgEnum("performance_status", ["green", "amber", "red"]);
+export const metricCategoryEnum = pgEnum("metric_category", ["revenue", "pipeline", "ventures", "clients", "finance", "team", "admin"]);
+export const insightTypeEnum = pgEnum("insight_type", ["working", "challenge", "recommendation"]);
+export const insightPriorityEnum = pgEnum("insight_priority", ["low", "medium", "high"]);
+export const actionTypeEnum = pgEnum("action_type", ["card_moved", "card_created", "card_updated", "priority_added", "priority_completed", "health_checkin", "celebration_added", "goal_created", "goal_updated", "target_updated"]);
+export const settingTypeEnum = pgEnum("setting_type", ["string", "number", "boolean", "json"]);
+export const dueDayEnum = pgEnum("due_day", ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]);
+export const activityStatusEnum = pgEnum("activity_status", ["pending", "done", "delayed", "deprioritised"]);
+export const partnerRoleEnum = pgEnum("partner_role", ["partner", "helper"]);
+
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: roleEnum("role").default("user").notNull(),
   avatarUrl: text("avatarUrl"),
   jobTitle: varchar("jobTitle", { length: 128 }),
-  // Extended profile fields
   birthplace: varchar("birthplace", { length: 255 }),
   lifePurpose: text("lifePurpose"),
   personalGoal: text("personalGoal"),
   skillMastering: text("skillMastering"),
-  currentHealthScore: int("currentHealthScore").default(75),
-  currentEnergyLevel: mysqlEnum("currentEnergyLevel", ["High", "Med", "Low"]).default("Med"),
+  currentHealthScore: integer("currentHealthScore").default(75),
+  currentEnergyLevel: energyLevelEnum("currentEnergyLevel").default("Med"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-/**
- * Team health check-ins - historical tracking
- */
-export const healthCheckins = mysqlTable("healthCheckins", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  score: int("score").notNull(), // 0-100
-  mood: mysqlEnum("mood", ["happy", "neutral", "sad"]).notNull(),
-  energyLevel: mysqlEnum("energyLevel", ["High", "Med", "Low"]).notNull(),
+export const healthCheckins = pgTable("healthCheckins", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  score: integer("score").notNull(),
+  mood: moodEnum("mood").notNull(),
+  energyLevel: energyEnum("energyLevel").notNull(),
   notes: text("notes"),
   checkinDate: timestamp("checkinDate").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -45,281 +55,225 @@ export const healthCheckins = mysqlTable("healthCheckins", {
 export type HealthCheckin = typeof healthCheckins.$inferSelect;
 export type InsertHealthCheckin = typeof healthCheckins.$inferInsert;
 
-/**
- * Weekly priorities - max 5 per person per week
- */
-export const weeklyPriorities = mysqlTable("weeklyPriorities", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
+export const weeklyPriorities = pgTable("weeklyPriorities", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
   description: text("description").notNull(),
-  status: mysqlEnum("status", ["pending", "in-progress", "done", "blocked"]).default("pending").notNull(),
+  status: priorityStatusEnum("status").default("pending").notNull(),
   dueDate: timestamp("dueDate").notNull(),
-  weekNumber: int("weekNumber").notNull(), // ISO week number
-  year: int("year").notNull(),
-  linkedGoalId: int("linkedGoalId"), // Optional link to annual goal
+  weekNumber: integer("weekNumber").notNull(),
+  year: integer("year").notNull(),
+  linkedGoalId: integer("linkedGoalId"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type WeeklyPriority = typeof weeklyPriorities.$inferSelect;
 export type InsertWeeklyPriority = typeof weeklyPriorities.$inferInsert;
 
-/**
- * Celebrations feed - team wins and milestones
- */
-export const celebrations = mysqlTable("celebrations", {
-  id: int("id").autoincrement().primaryKey(),
+export const celebrations = pgTable("celebrations", {
+  id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
-  category: mysqlEnum("category", ["deal", "birthday", "milestone", "project", "personal"]).notNull(),
+  category: celebrationCategoryEnum("category").notNull(),
   icon: varchar("icon", { length: 10 }).default("🎉"),
   celebrationDate: timestamp("celebrationDate").notNull(),
-  createdBy: int("createdBy").notNull(),
-  taggedUsers: text("taggedUsers"), // JSON array of user IDs
+  createdBy: integer("createdBy").notNull(),
+  taggedUsers: text("taggedUsers"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type Celebration = typeof celebrations.$inferSelect;
 export type InsertCelebration = typeof celebrations.$inferInsert;
 
-// Extended type for celebrations with user join
 export type CelebrationWithUser = Celebration & {
   createdByName: string | null;
   createdByAvatar: string | null;
 };
 
-/**
- * Pipeline stages configuration for all 6 categories
- */
-export const pipelineStages = mysqlTable("pipelineStages", {
-  id: int("id").autoincrement().primaryKey(),
-  pipelineType: mysqlEnum("pipelineType", ["bd", "ventures", "studio", "clients", "finance", "admin"]).notNull(),
+export const pipelineStages = pgTable("pipelineStages", {
+  id: serial("id").primaryKey(),
+  pipelineType: pipelineTypeEnum("pipelineType").notNull(),
   name: varchar("name", { length: 100 }).notNull(),
-  order: int("order").notNull(),
-  probabilityWeight: int("probabilityWeight").default(0), // For weighted pipeline calculations (0-100)
-  color: varchar("color", { length: 20 }), // For visual differentiation
+  order: integer("order").notNull(),
+  probabilityWeight: integer("probabilityWeight").default(0),
+  color: varchar("color", { length: 20 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type PipelineStage = typeof pipelineStages.$inferSelect;
 export type InsertPipelineStage = typeof pipelineStages.$inferInsert;
 
-/**
- * Pipeline cards - items in Kanban boards
- */
-export const pipelineCards = mysqlTable("pipelineCards", {
-  id: int("id").autoincrement().primaryKey(),
-  stageId: int("stageId").notNull(),
+export const pipelineCards = pgTable("pipelineCards", {
+  id: serial("id").primaryKey(),
+  stageId: integer("stageId").notNull(),
   title: text("title").notNull(),
   description: text("description"),
-  value: decimal("value", { precision: 15, scale: 2 }), // Monetary value
+  value: decimal("value", { precision: 15, scale: 2 }),
   currency: varchar("currency", { length: 3 }).default("ZAR"),
-  ownerId: int("ownerId"),
+  ownerId: integer("ownerId"),
   dueDate: timestamp("dueDate"),
-  tags: text("tags"), // JSON array of tags
-  metadata: text("metadata"), // JSON for flexible additional data
-  position: int("position").default(0), // For ordering within stage
+  tags: text("tags"),
+  metadata: text("metadata"),
+  position: integer("position").default(0),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  movedAt: timestamp("movedAt"), // Last time card moved stages
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  movedAt: timestamp("movedAt"),
 });
 
 export type PipelineCard = typeof pipelineCards.$inferSelect;
 export type InsertPipelineCard = typeof pipelineCards.$inferInsert;
 
-/**
- * Annual goals - strategic objectives for the year
- */
-export const annualGoals = mysqlTable("annualGoals", {
-  id: int("id").autoincrement().primaryKey(),
-  strategicObjective: varchar("strategicObjective", { length: 100 }).notNull(), // e.g., "Community Growth", "Impact Delivery"
+export const annualGoals = pgTable("annualGoals", {
+  id: serial("id").primaryKey(),
+  strategicObjective: varchar("strategicObjective", { length: 100 }).notNull(),
   goalName: varchar("goalName", { length: 255 }).notNull(),
   targetValue: decimal("targetValue", { precision: 15, scale: 2 }).notNull(),
-  targetUnit: varchar("targetUnit", { length: 50 }).notNull(), // e.g., "%", "R", "#", "days"
-  ownerId: int("ownerId"),
-  ownerName: varchar("ownerName", { length: 255 }), // EXCO Owner name
-  year: int("year").notNull(),
-  distributionStrategy: mysqlEnum("distributionStrategy", ["linear", "custom", "historical", "milestone"]).default("linear").notNull(),
+  targetUnit: varchar("targetUnit", { length: 50 }).notNull(),
+  ownerId: integer("ownerId"),
+  ownerName: varchar("ownerName", { length: 255 }),
+  year: integer("year").notNull(),
+  distributionStrategy: distributionStrategyEnum("distributionStrategy").default("linear").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type AnnualGoal = typeof annualGoals.$inferSelect;
 export type InsertAnnualGoal = typeof annualGoals.$inferInsert;
 
-/**
- * Monthly targets - cascaded from annual goals
- */
-export const monthlyTargets = mysqlTable("monthlyTargets", {
-  id: int("id").autoincrement().primaryKey(),
-  goalId: int("goalId").notNull(),
-  month: int("month").notNull(), // 1-12
-  year: int("year").notNull(),
+export const monthlyTargets = pgTable("monthlyTargets", {
+  id: serial("id").primaryKey(),
+  goalId: integer("goalId").notNull(),
+  month: integer("month").notNull(),
+  year: integer("year").notNull(),
   targetValue: decimal("targetValue", { precision: 15, scale: 2 }).notNull(),
   actualValue: decimal("actualValue", { precision: 15, scale: 2 }).default("0"),
-  weight: decimal("weight", { precision: 5, scale: 2 }), // Percentage weight for custom distribution
-  rationale: text("rationale"), // Explanation for the target
+  weight: decimal("weight", { precision: 5, scale: 2 }),
+  rationale: text("rationale"),
   notes: text("notes"),
-  isLocked: boolean("isLocked").default(false), // Locked after 5th of following month
-  performanceStatus: mysqlEnum("performanceStatus", ["green", "amber", "red"]), // green ≥75%, amber 60-74%, red <60%
+  isLocked: boolean("isLocked").default(false),
+  performanceStatus: performanceStatusEnum("performanceStatus"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type MonthlyTarget = typeof monthlyTargets.$inferSelect;
 export type InsertMonthlyTarget = typeof monthlyTargets.$inferInsert;
 
-/**
- * Performance snapshots - for trend analysis
- */
-export const performanceSnapshots = mysqlTable("performanceSnapshots", {
-  id: int("id").autoincrement().primaryKey(),
+export const performanceSnapshots = pgTable("performanceSnapshots", {
+  id: serial("id").primaryKey(),
   metricName: varchar("metricName", { length: 100 }).notNull(),
-  metricCategory: mysqlEnum("metricCategory", ["revenue", "pipeline", "ventures", "clients", "finance", "team", "admin"]).notNull(),
+  metricCategory: metricCategoryEnum("metricCategory").notNull(),
   value: decimal("value", { precision: 15, scale: 2 }).notNull(),
   unit: varchar("unit", { length: 50 }),
   snapshotDate: timestamp("snapshotDate").notNull(),
-  metadata: text("metadata"), // JSON for additional context
+  metadata: text("metadata"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type PerformanceSnapshot = typeof performanceSnapshots.$inferSelect;
 export type InsertPerformanceSnapshot = typeof performanceSnapshots.$inferInsert;
 
-/**
- * Automated insights - generated analysis for trends
- */
-export const insights = mysqlTable("insights", {
-  id: int("id").autoincrement().primaryKey(),
+export const insights = pgTable("insights", {
+  id: serial("id").primaryKey(),
   metricName: varchar("metricName", { length: 100 }).notNull(),
-  insightType: mysqlEnum("insightType", ["working", "challenge", "recommendation"]).notNull(),
+  insightType: insightTypeEnum("insightType").notNull(),
   content: text("content").notNull(),
-  priority: mysqlEnum("priority", ["low", "medium", "high"]).default("medium"),
+  priority: insightPriorityEnum("priority").default("medium"),
   generatedAt: timestamp("generatedAt").notNull(),
-  validUntil: timestamp("validUntil"), // Optional expiry for time-sensitive insights
-  metadata: text("metadata"), // JSON for supporting data
+  validUntil: timestamp("validUntil"),
+  metadata: text("metadata"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type Insight = typeof insights.$inferSelect;
 export type InsertInsight = typeof insights.$inferInsert;
 
-/**
- * Activity log - real-time tracking of all actions
- */
-export const activityLog = mysqlTable("activityLog", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  actionType: mysqlEnum("actionType", [
-    "card_moved", 
-    "card_created", 
-    "card_updated", 
-    "priority_added", 
-    "priority_completed", 
-    "health_checkin", 
-    "celebration_added",
-    "goal_created",
-    "goal_updated",
-    "target_updated"
-  ]).notNull(),
-  entityType: varchar("entityType", { length: 50 }).notNull(), // e.g., "pipeline_card", "weekly_priority"
-  entityId: int("entityId").notNull(),
-  oldValue: text("oldValue"), // JSON snapshot of previous state
-  newValue: text("newValue"), // JSON snapshot of new state
-  description: text("description"), // Human-readable description
-  timestamp: bigint("timestamp", { mode: "number" }).notNull(), // Unix timestamp in milliseconds
+export const activityLog = pgTable("activityLog", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  actionType: actionTypeEnum("actionType").notNull(),
+  entityType: varchar("entityType", { length: 50 }).notNull(),
+  entityId: integer("entityId").notNull(),
+  oldValue: text("oldValue"),
+  newValue: text("newValue"),
+  description: text("description"),
+  timestamp: bigint("timestamp", { mode: "number" }).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type ActivityLog = typeof activityLog.$inferSelect;
 export type InsertActivityLog = typeof activityLog.$inferInsert;
 
-/**
- * Dashboard metrics cache - for quick snapshot display
- */
-export const dashboardMetrics = mysqlTable("dashboardMetrics", {
-  id: int("id").autoincrement().primaryKey(),
+export const dashboardMetrics = pgTable("dashboardMetrics", {
+  id: serial("id").primaryKey(),
   metricKey: varchar("metricKey", { length: 100 }).notNull().unique(),
-  metricValue: text("metricValue").notNull(), // JSON for flexible structure
+  metricValue: text("metricValue").notNull(),
   lastCalculated: timestamp("lastCalculated").notNull(),
-  expiresAt: timestamp("expiresAt"), // Optional TTL for cache invalidation
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  expiresAt: timestamp("expiresAt"),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type DashboardMetric = typeof dashboardMetrics.$inferSelect;
 export type InsertDashboardMetric = typeof dashboardMetrics.$inferInsert;
 
-/**
- * System settings - configuration for the application
- */
-export const systemSettings = mysqlTable("systemSettings", {
-  id: int("id").autoincrement().primaryKey(),
+export const systemSettings = pgTable("systemSettings", {
+  id: serial("id").primaryKey(),
   settingKey: varchar("settingKey", { length: 100 }).notNull().unique(),
   settingValue: text("settingValue").notNull(),
-  settingType: mysqlEnum("settingType", ["string", "number", "boolean", "json"]).default("string").notNull(),
+  settingType: settingTypeEnum("settingType").default("string").notNull(),
   description: text("description"),
-  updatedBy: int("updatedBy"),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedBy: integer("updatedBy"),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type SystemSetting = typeof systemSettings.$inferSelect;
 export type InsertSystemSetting = typeof systemSettings.$inferInsert;
 
-
-/**
- * CEO Weekly Reflections - Top of mind from CEO this week
- */
-export const ceoReflections = mysqlTable("ceoReflections", {
-  id: int("id").autoincrement().primaryKey(),
-  content: text("content").notNull(), // Max ~10 lines of text
-  weekNumber: int("weekNumber").notNull(), // ISO week number
-  year: int("year").notNull(),
-  createdBy: int("createdBy").notNull(), // CEO user ID
+export const ceoReflections = pgTable("ceoReflections", {
+  id: serial("id").primaryKey(),
+  content: text("content").notNull(),
+  weekNumber: integer("weekNumber").notNull(),
+  year: integer("year").notNull(),
+  createdBy: integer("createdBy").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type CeoReflection = typeof ceoReflections.$inferSelect;
 export type InsertCeoReflection = typeof ceoReflections.$inferInsert;
 
-
-/**
- * Weekly Activities - Excel-like tracker for weekly tasks
- */
-export const weeklyActivities = mysqlTable("weeklyActivities", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(), // Who owns this activity
-  activity: text("activity").notNull(), // Activity description
-  dueDay: mysqlEnum("dueDay", ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]).notNull(),
-  dependency: text("dependency"), // What this depends on
-  accountabilityPartnerId: int("accountabilityPartnerId"), // User ID of accountability partner
-  partnerRole: mysqlEnum("partnerRole", ["partner", "helper"]), // Role when assigned to partner (null if not assigned)
-  monthlyGoalId: int("monthlyGoalId"), // Link to monthly target (optional)
-  status: mysqlEnum("status", ["pending", "done", "delayed", "deprioritised"]).default("pending").notNull(),
-  isPriority: boolean("isPriority").default(false), // Top 3 priorities per user per week
-  weekNumber: int("weekNumber").notNull(), // ISO week number
-  year: int("year").notNull(),
+export const weeklyActivities = pgTable("weeklyActivities", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  activity: text("activity").notNull(),
+  dueDay: dueDayEnum("dueDay").notNull(),
+  dependency: text("dependency"),
+  accountabilityPartnerId: integer("accountabilityPartnerId"),
+  partnerRole: partnerRoleEnum("partnerRole"),
+  monthlyGoalId: integer("monthlyGoalId"),
+  status: activityStatusEnum("status").default("pending").notNull(),
+  isPriority: boolean("isPriority").default(false),
+  weekNumber: integer("weekNumber").notNull(),
+  year: integer("year").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type WeeklyActivity = typeof weeklyActivities.$inferSelect;
 export type InsertWeeklyActivity = typeof weeklyActivities.$inferInsert;
 
-/**
- * Strategic Objectives - configurable objectives with weights
- */
-export const strategicObjectives = mysqlTable("strategicObjectives", {
-  id: int("id").autoincrement().primaryKey(),
+export const strategicObjectives = pgTable("strategicObjectives", {
+  id: serial("id").primaryKey(),
   name: varchar("name", { length: 100 }).notNull(),
-  weight: int("weight").notNull().default(20), // Percentage weight (0-100)
-  icon: varchar("icon", { length: 50 }).default("Target"), // Icon name
-  color: varchar("color", { length: 50 }).default("text-blue-600"), // Tailwind color class
-  bgColor: varchar("bgColor", { length: 100 }).default("bg-blue-50 border-blue-200"), // Background color class
-  displayOrder: int("displayOrder").notNull().default(0),
-  year: int("year").notNull(),
+  weight: integer("weight").notNull().default(20),
+  icon: varchar("icon", { length: 50 }).default("Target"),
+  color: varchar("color", { length: 50 }).default("text-blue-600"),
+  bgColor: varchar("bgColor", { length: 100 }).default("bg-blue-50 border-blue-200"),
+  displayOrder: integer("displayOrder").notNull().default(0),
+  year: integer("year").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type StrategicObjective = typeof strategicObjectives.$inferSelect;
