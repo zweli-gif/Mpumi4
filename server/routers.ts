@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import * as db from "./db";
 
 // Helper to get current week number
@@ -471,8 +471,8 @@ export const appRouter = router({
         return db.getKPIStatusWithActivities(input.year);
       }),
 
-    // Create annual goal
-    create: protectedProcedure
+    // Create annual goal (admin only)
+    create: adminProcedure
       .input(z.object({
         strategicObjective: z.string().min(1),
         goalName: z.string().min(1),
@@ -500,8 +500,8 @@ export const appRouter = router({
         return goal;
       }),
 
-    // Update annual goal
-    update: protectedProcedure
+    // Update annual goal (admin only)
+    update: adminProcedure
       .input(z.object({
         id: z.number(),
         strategicObjective: z.string().optional(),
@@ -531,15 +531,15 @@ export const appRouter = router({
         return result;
       }),
 
-    // Delete annual goal
-    delete: protectedProcedure
+    // Delete annual goal (admin only)
+    delete: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         return db.deleteAnnualGoal(input.id);
       }),
 
-    // Generate monthly cascade
-    generateCascade: protectedProcedure
+    // Generate monthly cascade (admin only)
+    generateCascade: adminProcedure
       .input(z.object({
         goalId: z.number(),
         customWeights: z.array(z.object({
@@ -625,6 +625,35 @@ export const appRouter = router({
           entityId: input.id,
           newValue: JSON.stringify({ actualValue: input.actualValue }),
           description: `${ctx.user.name} updated monthly target actual value`,
+          timestamp: Date.now(),
+        });
+
+        return result;
+      }),
+
+    // Update monthly target value by goalId + month + year (admin only)
+    updateMonthlyTargetValue: adminProcedure
+      .input(z.object({
+        goalId: z.number(),
+        month: z.number(),
+        year: z.number(),
+        targetValue: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.updateMonthlyTargetByGoalMonth(
+          input.goalId,
+          input.month,
+          input.year,
+          { targetValue: input.targetValue }
+        );
+
+        await db.logActivity({
+          userId: ctx.user.id,
+          actionType: "target_updated",
+          entityType: "monthly_target",
+          entityId: input.goalId,
+          newValue: JSON.stringify({ targetValue: input.targetValue, month: input.month }),
+          description: `${ctx.user.name} set monthly target value`,
           timestamp: Date.now(),
         });
 

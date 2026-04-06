@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import AppHeader from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
-import { Loader2, Download } from "lucide-react";
+import { Loader2, Download, Shield, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -142,9 +142,23 @@ export default function Monthly() {
     goalName: string;
   } | null>(null);
   const [editValue, setEditValue] = React.useState('');
+
+  // Admin state
+  const [editMode, setEditMode] = React.useState<'actuals' | 'targets'>('actuals');
+  const [ownerDialog, setOwnerDialog] = React.useState<{
+    goalId: number;
+    goalName: string;
+    currentOwner: string;
+  } | null>(null);
+  const [ownerValue, setOwnerValue] = React.useState('');
   
+  // Current user
+  const { data: currentUser } = trpc.auth.me.useQuery();
+  const isAdmin = currentUser?.role === 'admin';
+
   // Fetch goals with status
   const { data: goalsWithStatus, isLoading: goalsLoading } = trpc.goals.getWithStatus.useQuery({ year: currentYear });
+  const { data: allUsers } = trpc.users.getAll.useQuery();
   
   // Fetch strategic objectives for colors/styling
   const { data: objectives } = trpc.strategicObjectives.getAll.useQuery({ year: currentYear });
@@ -153,7 +167,7 @@ export default function Monthly() {
   const { data: monthlyTargetsData } = trpc.goals.getAllMonthlyForYear.useQuery({ year: currentYear });
   const monthlyTargets = monthlyTargetsData?.map(t => t.monthlyTargets);
   
-  // Update mutation
+  // Mutations
   const utils = trpc.useUtils();
   const updateMutation = trpc.goals.updateMonthlyActualByGoalMonth.useMutation({
     onSuccess: () => {
@@ -165,6 +179,31 @@ export default function Monthly() {
     },
     onError: () => {
       toast.error('Failed to update value');
+    },
+  });
+
+  const updateTargetMutation = trpc.goals.updateMonthlyTargetValue.useMutation({
+    onSuccess: () => {
+      utils.goals.getAllMonthlyForYear.invalidate({ year: currentYear });
+      utils.goals.getWithStatus.invalidate({ year: currentYear });
+      setEditDialog(null);
+      setEditValue('');
+      toast.success('Monthly target updated');
+    },
+    onError: () => {
+      toast.error('Failed to update target');
+    },
+  });
+
+  const updateOwnerMutation = trpc.goals.update.useMutation({
+    onSuccess: () => {
+      utils.goals.getWithStatus.invalidate({ year: currentYear });
+      setOwnerDialog(null);
+      setOwnerValue('');
+      toast.success('Owner updated');
+    },
+    onError: () => {
+      toast.error('Failed to update owner');
     },
   });
 
@@ -216,35 +255,54 @@ export default function Monthly() {
 
   // Handle circle click
   const handleCircleClick = (goalId: number, month: number, goalName: string, unit: string) => {
-    // Only allow editing current and previous month
+    if (editMode === 'targets' && isAdmin) {
+      // In target mode (admin only), any month is editable
+      const target = monthlyTargets?.find((t: any) => t.goalId === goalId && t.month === month);
+      const currentValue = target?.targetValue || '0';
+      setEditDialog({ open: true, goalId, month, currentValue, unit: formatUnit(unit), goalName });
+      setEditValue(currentValue);
+      return;
+    }
+
+    // In actuals mode, only current and previous month
     if (month !== currentMonth && month !== currentMonth - 1) {
       return;
     }
-    
     const target = monthlyTargets?.find((t: any) => t.goalId === goalId && t.month === month);
     const currentValue = target?.actualValue || '0';
-    
-    setEditDialog({
-      open: true,
-      goalId,
-      month,
-      currentValue,
-      unit: formatUnit(unit),
-      goalName,
-    });
+    setEditDialog({ open: true, goalId, month, currentValue, unit: formatUnit(unit), goalName });
     setEditValue(currentValue);
   };
-  
+
   // Handle save
   const handleSave = () => {
     if (!editDialog) return;
-    
-    updateMutation.mutate({
-      goalId: editDialog.goalId,
-      month: editDialog.month,
-      year: currentYear,
-      actualValue: editValue,
-    });
+    if (editMode === 'targets') {
+      updateTargetMutation.mutate({
+        goalId: editDialog.goalId,
+        month: editDialog.month,
+        year: currentYear,
+        targetValue: editValue,
+      });
+    } else {
+      updateMutation.mutate({
+        goalId: editDialog.goalId,
+        month: editDialog.month,
+        year: currentYear,
+        actualValue: editValue,
+      });
+    }
+  };
+
+  // Handle owner dialog
+  const openOwnerDialog = (goalId: number, goalName: string, currentOwner: string) => {
+    setOwnerDialog({ goalId, goalName, currentOwner });
+    setOwnerValue(currentOwner);
+  };
+
+  const handleSaveOwner = () => {
+    if (!ownerDialog) return;
+    updateOwnerMutation.mutate({ id: ownerDialog.goalId, ownerName: ownerValue });
   };
 
   // Export to Excel
@@ -327,6 +385,29 @@ export default function Monthly() {
           </Button>
         </div>
 
+        {/* Admin toolbar */}
+        {isAdmin && (
+          <div className="mb-4 flex items-center gap-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+            <Shield className="w-4 h-4 text-amber-600 shrink-0" />
+            <span className="text-xs font-medium text-amber-700">Admin:</span>
+            <button
+              onClick={() => setEditMode('actuals')}
+              className={`text-xs px-2 py-1 rounded transition-colors ${editMode === 'actuals' ? 'bg-amber-600 text-white' : 'bg-white text-amber-700 border border-amber-300 hover:bg-amber-50'}`}
+            >
+              Edit Actuals
+            </button>
+            <button
+              onClick={() => setEditMode('targets')}
+              className={`text-xs px-2 py-1 rounded transition-colors ${editMode === 'targets' ? 'bg-amber-600 text-white' : 'bg-white text-amber-700 border border-amber-300 hover:bg-amber-50'}`}
+            >
+              Set Targets
+            </button>
+            {editMode === 'targets' && (
+              <span className="text-xs text-amber-600 ml-1">— click any month cell to edit its target</span>
+            )}
+          </div>
+        )}
+
         {/* Spreadsheet table */}
         <div className="space-y-6">
           {Object.entries(groupedGoals).map(([objectiveName, goals]) => {
@@ -364,22 +445,37 @@ export default function Monthly() {
                           <tr key={goal.id} className={`border-b last:border-b-0 ${idx % 2 === 0 ? 'bg-white/60' : 'bg-white/30'}`}>
                             <td className="px-3 py-3 text-gray-900 font-medium">{goal.goalName}</td>
                             <td className="px-3 py-3 text-[#ec4899] font-semibold">{formatUnit(goal.targetUnit)}</td>
-                            <td className="px-3 py-3 text-gray-700">{goal.ownerName || '-'}</td>
+                            <td className="px-3 py-3 text-gray-700">
+                              <div className="flex items-center gap-1">
+                                <span>{goal.ownerName || '-'}</span>
+                                {isAdmin && (
+                                  <button
+                                    onClick={() => openOwnerDialog(goal.id, goal.goalName, goal.ownerName || '')}
+                                    className="text-gray-300 hover:text-[#ec4899] transition-colors"
+                                    title="Assign owner"
+                                  >
+                                    <Pencil className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
                             <td className="px-3 py-3 text-center">
                               <StatusBadge status={goal.status} />
                             </td>
                             {MONTHS.map((_, monthIndex) => {
                               const month = monthIndex + 1;
                               const { progress, target } = getMonthlyProgress(goal.id, month);
-                              const isEditable = month === currentMonth || month === currentMonth - 1;
-                              
+                              const isActualEditable = editMode === 'actuals' && (month === currentMonth || month === currentMonth - 1);
+                              const isTargetEditable = editMode === 'targets' && isAdmin;
+                              const isEditable = isActualEditable || isTargetEditable;
+
                               return (
                                 <td key={monthIndex} className="px-2 py-3 text-center">
                                   <div className="flex justify-center">
-                                    <ProgressWheel 
-                                      progress={progress} 
-                                      target={target} 
-                                      size={32} 
+                                    <ProgressWheel
+                                      progress={progress}
+                                      target={target}
+                                      size={32}
                                       strokeWidth={3}
                                       editable={isEditable}
                                       onClick={() => isEditable && handleCircleClick(goal.id, month, goal.goalName, goal.targetUnit)}
@@ -418,11 +514,11 @@ export default function Monthly() {
           <div className="bg-white rounded-lg p-6 shadow-xl max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold mb-2">{editDialog.goalName}</h3>
             <p className="text-sm text-gray-600 mb-4">{MONTHS[editDialog.month - 1]} {currentYear}</p>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Actual Value ({editDialog.unit})
+                  {editMode === 'targets' ? 'Target Value' : 'Actual Value'} ({editDialog.unit})
                 </label>
                 <input
                   type="number"
@@ -433,21 +529,21 @@ export default function Monthly() {
                   autoFocus
                 />
               </div>
-              
+
               <div className="flex gap-2 justify-end">
                 <Button
                   variant="outline"
                   onClick={() => setEditDialog(null)}
-                  disabled={updateMutation.isPending}
+                  disabled={updateMutation.isPending || updateTargetMutation.isPending}
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleSave}
-                  disabled={updateMutation.isPending}
+                  disabled={updateMutation.isPending || updateTargetMutation.isPending}
                   className="bg-[#ec4899] hover:bg-[#db2777]"
                 >
-                  {updateMutation.isPending ? (
+                  {(updateMutation.isPending || updateTargetMutation.isPending) ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Saving...
@@ -455,6 +551,46 @@ export default function Monthly() {
                   ) : (
                     'Save'
                   )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Owner Dialog */}
+      {ownerDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setOwnerDialog(null)}>
+          <div className="bg-white rounded-lg p-6 shadow-xl max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-1">Assign Owner</h3>
+            <p className="text-sm text-gray-600 mb-4">{ownerDialog.goalName}</p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Owner</label>
+                <select
+                  value={ownerValue}
+                  onChange={(e) => setOwnerValue(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#ec4899] bg-white"
+                >
+                  <option value="">— Unassigned —</option>
+                  {allUsers?.map((u: any) => (
+                    <option key={u.id} value={u.name || u.email}>{u.name || u.email}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setOwnerDialog(null)} disabled={updateOwnerMutation.isPending}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSaveOwner}
+                  disabled={updateOwnerMutation.isPending}
+                  className="bg-[#ec4899] hover:bg-[#db2777]"
+                >
+                  {updateOwnerMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  Save
                 </Button>
               </div>
             </div>

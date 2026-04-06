@@ -562,7 +562,7 @@ export default function Settings() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className={`grid w-full ${user?.role === 'admin' ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <TabsTrigger value="team" className="text-xs">
               <Users className="h-3 w-3 mr-1" />
               Team
@@ -575,6 +575,12 @@ export default function Settings() {
               <Building2 className="h-3 w-3 mr-1" />
               Company
             </TabsTrigger>
+            {user?.role === 'admin' && (
+              <TabsTrigger value="access" className="text-xs">
+                <Shield className="h-3 w-3 mr-1" />
+                Access
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* Team Members Tab */}
@@ -1256,6 +1262,125 @@ export default function Settings() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Access Tab (Admin only) */}
+          {user?.role === 'admin' && (
+            <TabsContent value="access" className="space-y-4">
+              <Card>
+                <CardHeader className="py-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-amber-600" />
+                    Admin Access Management
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Grant or revoke admin privileges. Admins can set KPI targets, assign owners, and manage team settings.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="py-2 space-y-4">
+                  {/* Admins */}
+                  <div>
+                    <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-2">Admins</p>
+                    <div className="space-y-2">
+                      {allUsers?.filter((m: any) => m.role === 'admin').map((member: any) => (
+                        <div key={member.id} className="flex items-center justify-between p-3 border border-amber-200 bg-amber-50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={member.avatarUrl || undefined} />
+                              <AvatarFallback className="bg-amber-200 text-amber-800 text-xs font-medium">
+                                {member.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || '??'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium text-sm">{member.name || 'Unnamed'}</p>
+                              <p className="text-xs text-muted-foreground">{member.email}</p>
+                            </div>
+                          </div>
+                          {member.id !== user?.id && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="outline" className="text-xs h-7 text-destructive border-destructive hover:bg-destructive/10">
+                                  Remove Admin
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Remove admin privileges?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    {member.name || member.email} will become a regular member and lose access to admin features.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => updateUserMutation.mutate({ id: member.id, role: 'user' })}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Remove Admin
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
+                          {member.id === user?.id && (
+                            <Badge variant="outline" className="text-xs text-amber-700 border-amber-400">You</Badge>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Regular members */}
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Members</p>
+                    <div className="space-y-2">
+                      {allUsers?.filter((m: any) => m.role !== 'admin').map((member: any) => (
+                        <div key={member.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={member.avatarUrl || undefined} />
+                              <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                                {member.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || '??'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium text-sm">{member.name || 'Unnamed'}</p>
+                              <p className="text-xs text-muted-foreground">{member.email}</p>
+                            </div>
+                          </div>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="outline" className="text-xs h-7">
+                                Make Admin
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Grant admin privileges?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  {member.name || member.email} will be able to set KPI targets, assign owners, and manage team settings.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => updateUserMutation.mutate({ id: member.id, role: 'admin' })}
+                                >
+                                  Grant Admin
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      ))}
+                      {allUsers?.filter((m: any) => m.role !== 'admin').length === 0 && (
+                        <p className="text-sm text-muted-foreground text-center py-4">All team members are admins.</p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
 
           {/* Department Dialog */}
           <Dialog open={departmentDialogOpen} onOpenChange={setDepartmentDialogOpen}>
