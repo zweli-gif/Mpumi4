@@ -591,19 +591,40 @@ export async function getKPIStatusWithActivities(year: number) {
   const db = await getDb();
   if (!db) return [];
   const goals = await db.select().from(annualGoals).where(eq(annualGoals.year, year)).orderBy(asc(annualGoals.strategicObjective), asc(annualGoals.id));
+  if (goals.length === 0) return [];
+
   const now = new Date();
   const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
   const fourWeeksAgo = new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000);
-  const goalsWithStatus = await Promise.all(goals.map(async (goal) => {
-    const recentActivities = await db.select().from(weeklyActivities).where(and(eq(weeklyActivities.monthlyGoalId, goal.id), gte(weeklyActivities.createdAt, fourWeeksAgo))) || [];
+  const goalIds = goals.map(g => g.id);
+
+  // Single query for all relevant activities across all goals
+  const recentActivities = await db
+    .select()
+    .from(weeklyActivities)
+    .where(and(
+      inArray(weeklyActivities.monthlyGoalId, goalIds),
+      gte(weeklyActivities.createdAt, fourWeeksAgo)
+    ));
+
+  // Group activities by goalId in memory
+  const activitiesByGoal = new Map<number, typeof recentActivities>();
+  for (const activity of recentActivities) {
+    if (activity.monthlyGoalId == null) continue;
+    const list = activitiesByGoal.get(activity.monthlyGoalId) || [];
+    list.push(activity);
+    activitiesByGoal.set(activity.monthlyGoalId, list);
+  }
+
+  return goals.map(goal => {
+    const activities = activitiesByGoal.get(goal.id) || [];
     let status: 'ok' | 'check' | 'save' = 'save';
-    if (recentActivities.length > 0) {
-      const hasRecentActivity = recentActivities.some(a => a.createdAt.getTime() >= twoWeeksAgo.getTime());
+    if (activities.length > 0) {
+      const hasRecentActivity = activities.some(a => new Date(a.createdAt).getTime() >= twoWeeksAgo.getTime());
       status = hasRecentActivity ? 'ok' : 'check';
     }
-    return { ...goal, status, activityCount: recentActivities.length };
-  }));
-  return goalsWithStatus;
+    return { ...goal, status, activityCount: activities.length };
+  });
 }
 
 export async function getCeoReflectionForWeek(weekNumber: number, year: number) {

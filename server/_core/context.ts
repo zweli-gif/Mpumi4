@@ -39,8 +39,14 @@ export async function createContext({ req, res }: { req: Request; res: Response 
         // Ensure designated admin accounts always have admin role
         const ADMIN_EMAILS = ['albert@thirdspace.africa'];
         if (user && ADMIN_EMAILS.includes(email) && user.role !== 'admin') {
-          await db.updateUser(user.id, { role: 'admin' });
-          user = { ...user, role: 'admin' };
+          try {
+            await db.updateUser(user.id, { role: 'admin' });
+            user = { ...user, role: 'admin' };
+          } catch (adminErr) {
+            // Don't fail the whole request if admin promotion fails;
+            // user still gets their current role
+            console.error('[Auth] Failed to auto-promote admin:', adminErr);
+          }
         }
       }
     }
