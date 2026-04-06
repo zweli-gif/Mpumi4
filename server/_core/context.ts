@@ -36,6 +36,12 @@ export async function createContext({ req, res }: { req: Request; res: Response 
           });
           user = await db.getUserByOpenId(supabaseUser.id);
         }
+        // Ensure designated admin accounts always have admin role
+        const ADMIN_EMAILS = ['albert@thirdspace.africa'];
+        if (user && ADMIN_EMAILS.includes(email) && user.role !== 'admin') {
+          await db.updateUser(user.id, { role: 'admin' });
+          user = { ...user, role: 'admin' };
+        }
       }
     }
   } catch (error) {

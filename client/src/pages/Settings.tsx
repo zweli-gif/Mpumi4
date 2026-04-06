@@ -162,6 +162,14 @@ export default function Settings() {
     targetUnit: string;
     ownerName: string;
   } | null>(null);
+
+  // Add KPI dialog state
+  const [addKpiDialogOpen, setAddKpiDialogOpen] = useState(false);
+  const [addKpiObjective, setAddKpiObjective] = useState("");
+  const [addKpiName, setAddKpiName] = useState("");
+  const [addKpiTarget, setAddKpiTarget] = useState("");
+  const [addKpiUnit, setAddKpiUnit] = useState("#");
+  const [addKpiOwner, setAddKpiOwner] = useState("");
   
   // Departments state
   const [departments, setDepartments] = useState(INITIAL_DEPARTMENTS);
@@ -256,11 +264,12 @@ export default function Settings() {
 
   const createGoalMutation = trpc.goals.create.useMutation({
     onSuccess: () => {
-      toast.success("Goal created");
+      toast.success("KPI created");
       refetchGoals();
+      setAddKpiDialogOpen(false);
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to create goal");
+      toast.error(error.message || "Failed to create KPI");
     }
   });
 
@@ -486,13 +495,32 @@ export default function Settings() {
     });
   };
 
-  // Add new goal to an objective
+  // Open Add KPI dialog for an objective
   const addGoalToObjective = (objective: string) => {
+    setAddKpiObjective(objective);
+    setAddKpiName("");
+    setAddKpiTarget("");
+    setAddKpiUnit("#");
+    setAddKpiOwner("");
+    setAddKpiDialogOpen(true);
+  };
+
+  // Submit new KPI
+  const submitAddKpi = () => {
+    if (!addKpiName.trim()) {
+      toast.error("Please enter a KPI name");
+      return;
+    }
+    if (!addKpiTarget || isNaN(Number(addKpiTarget))) {
+      toast.error("Please enter a valid target value");
+      return;
+    }
     createGoalMutation.mutate({
-      strategicObjective: objective,
-      goalName: "New KPI",
-      targetValue: "0",
-      targetUnit: "#",
+      strategicObjective: addKpiObjective,
+      goalName: addKpiName.trim(),
+      targetValue: addKpiTarget,
+      targetUnit: addKpiUnit,
+      ownerName: addKpiOwner.trim() || undefined,
       year: currentYear,
     });
   };
@@ -1381,6 +1409,76 @@ export default function Settings() {
               </Card>
             </TabsContent>
           )}
+
+          {/* Add KPI Dialog */}
+          <Dialog open={addKpiDialogOpen} onOpenChange={setAddKpiDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add KPI</DialogTitle>
+                <DialogDescription>{addKpiObjective}</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>KPI Name *</Label>
+                  <Input
+                    value={addKpiName}
+                    onChange={(e) => setAddKpiName(e.target.value)}
+                    placeholder="e.g., New Members Acquired"
+                    autoFocus
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Annual Target *</Label>
+                    <Input
+                      type="number"
+                      value={addKpiTarget}
+                      onChange={(e) => setAddKpiTarget(e.target.value)}
+                      placeholder="e.g., 1000"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Unit</Label>
+                    <Select value={addKpiUnit} onValueChange={setAddKpiUnit}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="#"># (count)</SelectItem>
+                        <SelectItem value="%">% (percent)</SelectItem>
+                        <SelectItem value="R">R (Rand)</SelectItem>
+                        <SelectItem value="ZAR">ZAR</SelectItem>
+                        <SelectItem value="days">days</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Owner</Label>
+                  <Select value={addKpiOwner} onValueChange={setAddKpiOwner}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="— Unassigned —" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">— Unassigned —</SelectItem>
+                      {allUsers?.map((u: any) => (
+                        <SelectItem key={u.id} value={u.name || u.email || ""}>
+                          {u.name || u.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setAddKpiDialogOpen(false)}>Cancel</Button>
+                <Button onClick={submitAddKpi} disabled={createGoalMutation.isPending}>
+                  {createGoalMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Add KPI
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           {/* Department Dialog */}
           <Dialog open={departmentDialogOpen} onOpenChange={setDepartmentDialogOpen}>
