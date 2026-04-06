@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation, Redirect } from "wouter";
@@ -52,11 +53,22 @@ function Router() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session && !session.user.email?.endsWith("@thirdspace.africa")) {
+        supabase.auth.signOut();
+        toast.error("Access restricted. Please sign in with a @thirdspace.africa email address.");
+        setAuthLoading(false);
+        return;
+      }
       setSession(session);
       setAuthLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session && !session.user.email?.endsWith("@thirdspace.africa")) {
+        supabase.auth.signOut();
+        toast.error("Access restricted. Please sign in with a @thirdspace.africa email address.");
+        return;
+      }
       setSession(session);
     });
 
