@@ -273,6 +273,20 @@ export default function Settings() {
     }
   });
 
+  const seedDefaultsMutation = trpc.goals.seedDefaults.useMutation({
+    onSuccess: (result) => {
+      if (result.skipped) {
+        toast.info(result.message || "KPIs already exist");
+      } else {
+        toast.success(`${result.count} default KPIs created successfully`);
+        refetchGoals();
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to seed default KPIs");
+    }
+  });
+
   const deleteGoalMutation = trpc.goals.delete.useMutation({
     onSuccess: () => {
       toast.success("Goal deleted");
@@ -855,6 +869,25 @@ export default function Settings() {
 
           {/* Annual Goals Tab - New Design */}
           <TabsContent value="goals" className="space-y-4">
+            {/* Populate defaults banner — shown when no KPIs exist yet */}
+            {user?.role === 'admin' && !goalsLoading && annualGoals?.length === 0 && (
+              <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div>
+                  <p className="text-sm font-medium text-blue-800">No KPIs found for {currentYear}</p>
+                  <p className="text-xs text-blue-600">Populate 25 default KPIs across all 5 strategic objectives to get started.</p>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => seedDefaultsMutation.mutate({ year: currentYear })}
+                  disabled={seedDefaultsMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700 text-white shrink-0 ml-3"
+                >
+                  {seedDefaultsMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                  Populate Defaults
+                </Button>
+              </div>
+            )}
+
             {/* Total Weight Indicator */}
             {user?.role === 'admin' && (
               <div className="flex items-center justify-between bg-muted/50 rounded-lg p-3">

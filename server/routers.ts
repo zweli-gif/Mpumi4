@@ -472,7 +472,7 @@ export const appRouter = router({
       }),
 
     // Create annual goal (admin only)
-    create: adminProcedure
+    create: protectedProcedure
       .input(z.object({
         strategicObjective: z.string().min(1),
         goalName: z.string().min(1),
@@ -484,9 +484,11 @@ export const appRouter = router({
         distributionStrategy: z.enum(["linear", "custom", "historical", "milestone"]).default("linear"),
       }))
       .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Only admins can create KPIs' });
+        }
         const goal = await db.createAnnualGoal(input);
 
-        // Log activity
         await db.logActivity({
           userId: ctx.user.id,
           actionType: "goal_created",
@@ -501,7 +503,7 @@ export const appRouter = router({
       }),
 
     // Update annual goal (admin only)
-    update: adminProcedure
+    update: protectedProcedure
       .input(z.object({
         id: z.number(),
         strategicObjective: z.string().optional(),
@@ -513,11 +515,13 @@ export const appRouter = router({
         distributionStrategy: z.enum(["linear", "custom", "historical", "milestone"]).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Only admins can update KPIs' });
+        }
         const { id, ...updates } = input;
-        
+
         const result = await db.updateAnnualGoal(id, updates);
 
-        // Log activity
         await db.logActivity({
           userId: ctx.user.id,
           actionType: "goal_updated",
@@ -532,14 +536,17 @@ export const appRouter = router({
       }),
 
     // Delete annual goal (admin only)
-    delete: adminProcedure
+    delete: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Only admins can delete KPIs' });
+        }
         return db.deleteAnnualGoal(input.id);
       }),
 
     // Generate monthly cascade (admin only)
-    generateCascade: adminProcedure
+    generateCascade: protectedProcedure
       .input(z.object({
         goalId: z.number(),
         customWeights: z.array(z.object({
@@ -549,9 +556,12 @@ export const appRouter = router({
         })).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Only admins can generate cascades' });
+        }
         const goals = await db.getAnnualGoals(new Date().getFullYear());
         const goal = goals.find(g => g.id === input.goalId);
-        
+
         if (!goal) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Goal not found" });
         }
@@ -688,6 +698,58 @@ export const appRouter = router({
         });
 
         return result;
+      }),
+
+    // Seed default KPIs for all strategic objectives (admin only, idempotent)
+    seedDefaults: protectedProcedure
+      .input(z.object({ year: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Only admins can seed KPIs' });
+        }
+        const existing = await db.getAnnualGoals(input.year);
+        if (existing.length > 0) {
+          return { skipped: true, message: `${existing.length} KPIs already exist for ${input.year}` };
+        }
+
+        const defaults = [
+          // Community Growth (20%)
+          { strategicObjective: "Community Growth", goalName: "New Members Acquired",       targetValue: "50",       targetUnit: "#",   year: input.year, distributionStrategy: "linear" as const },
+          { strategicObjective: "Community Growth", goalName: "Member Retention Rate",       targetValue: "80",       targetUnit: "%",   year: input.year, distributionStrategy: "linear" as const },
+          { strategicObjective: "Community Growth", goalName: "Community Events Hosted",     targetValue: "24",       targetUnit: "#",   year: input.year, distributionStrategy: "linear" as const },
+          { strategicObjective: "Community Growth", goalName: "New Partnerships Signed",     targetValue: "10",       targetUnit: "#",   year: input.year, distributionStrategy: "linear" as const },
+          { strategicObjective: "Community Growth", goalName: "Community Engagement Score",  targetValue: "75",       targetUnit: "%",   year: input.year, distributionStrategy: "linear" as const },
+          // Impact Delivery (25%)
+          { strategicObjective: "Impact Delivery",  goalName: "Active Client Projects",      targetValue: "20",       targetUnit: "#",   year: input.year, distributionStrategy: "linear" as const },
+          { strategicObjective: "Impact Delivery",  goalName: "Client Satisfaction Score",   targetValue: "85",       targetUnit: "%",   year: input.year, distributionStrategy: "linear" as const },
+          { strategicObjective: "Impact Delivery",  goalName: "On-Time Delivery Rate",       targetValue: "90",       targetUnit: "%",   year: input.year, distributionStrategy: "linear" as const },
+          { strategicObjective: "Impact Delivery",  goalName: "Annual Revenue",              targetValue: "24000000", targetUnit: "ZAR", year: input.year, distributionStrategy: "custom" as const },
+          { strategicObjective: "Impact Delivery",  goalName: "Project Profit Margin",       targetValue: "25",       targetUnit: "%",   year: input.year, distributionStrategy: "linear" as const },
+          // New Frontiers (20%)
+          { strategicObjective: "New Frontiers",    goalName: "Ventures at Pilot Stage",     targetValue: "3",        targetUnit: "#",   year: input.year, distributionStrategy: "milestone" as const },
+          { strategicObjective: "New Frontiers",    goalName: "New Concepts Validated",      targetValue: "10",       targetUnit: "#",   year: input.year, distributionStrategy: "linear" as const },
+          { strategicObjective: "New Frontiers",    goalName: "Active Ventures",             targetValue: "5",        targetUnit: "#",   year: input.year, distributionStrategy: "linear" as const },
+          { strategicObjective: "New Frontiers",    goalName: "Venture Revenue",             targetValue: "2000000",  targetUnit: "ZAR", year: input.year, distributionStrategy: "custom" as const },
+          { strategicObjective: "New Frontiers",    goalName: "Innovation Partnerships",     targetValue: "6",        targetUnit: "#",   year: input.year, distributionStrategy: "linear" as const },
+          // Stewardship (20%)
+          { strategicObjective: "Stewardship",      goalName: "Cash Reserves",               targetValue: "1000000",  targetUnit: "ZAR", year: input.year, distributionStrategy: "linear" as const },
+          { strategicObjective: "Stewardship",      goalName: "Profit Margin",               targetValue: "20",       targetUnit: "%",   year: input.year, distributionStrategy: "linear" as const },
+          { strategicObjective: "Stewardship",      goalName: "Invoice Collection Rate",     targetValue: "95",       targetUnit: "%",   year: input.year, distributionStrategy: "linear" as const },
+          { strategicObjective: "Stewardship",      goalName: "Cost Efficiency",             targetValue: "85",       targetUnit: "%",   year: input.year, distributionStrategy: "linear" as const },
+          { strategicObjective: "Stewardship",      goalName: "Compliance Score",            targetValue: "100",      targetUnit: "%",   year: input.year, distributionStrategy: "linear" as const },
+          // Purpose & Platform (15%)
+          { strategicObjective: "Purpose & Platform", goalName: "Team Size",                 targetValue: "10",       targetUnit: "#",   year: input.year, distributionStrategy: "milestone" as const },
+          { strategicObjective: "Purpose & Platform", goalName: "Employee Satisfaction",     targetValue: "85",       targetUnit: "%",   year: input.year, distributionStrategy: "linear" as const },
+          { strategicObjective: "Purpose & Platform", goalName: "Training Hours",            targetValue: "100",      targetUnit: "#",   year: input.year, distributionStrategy: "linear" as const },
+          { strategicObjective: "Purpose & Platform", goalName: "OKR Achievement Rate",      targetValue: "80",       targetUnit: "%",   year: input.year, distributionStrategy: "linear" as const },
+          { strategicObjective: "Purpose & Platform", goalName: "Platform Uptime",           targetValue: "99",       targetUnit: "%",   year: input.year, distributionStrategy: "linear" as const },
+        ];
+
+        for (const goal of defaults) {
+          await db.createAnnualGoal(goal);
+        }
+
+        return { seeded: true, count: defaults.length };
       }),
   }),
 
