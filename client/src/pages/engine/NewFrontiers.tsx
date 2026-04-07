@@ -1,127 +1,226 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { 
-  Home as HomeIcon, 
-  LayoutDashboard, 
-  Cog, 
-  Calendar, 
-  CalendarDays, 
-  Settings, 
+import {
+  ArrowLeft,
+  Edit2,
   Loader2,
   Plus,
-  ArrowLeft,
   Rocket,
-  Car,
-  DollarSign,
-  User
+  Trash2,
+  TrendingUp,
+  User,
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import AppHeader from "@/components/AppHeader";
+import { trpc } from "@/lib/trpc";
+import { VentureEditModal } from "@/components/VentureEditModal";
 
-// Stage gates for ventures
-const STAGE_GATES = [
-  { id: "ideation", name: "Ideation", position: 0 },
-  { id: "validation", name: "Validation", position: 1 },
-  { id: "mvp", name: "MVP", position: 2 },
-  { id: "pilot", name: "Pilot", position: 3 },
-  { id: "scale", name: "Scale", position: 4 },
-  { id: "exit", name: "Exit", position: 5 },
-];
+function parseMetadata(value?: string | null) {
+  if (!value) return {};
 
-// Venture type
-type Venture = {
-  id: number;
-  name: string;
-  description: string;
-  currentStage: string;
-  budgetTotal: number; // Total budget in R
-  budgetSpent: number; // Amount spent so far
-  budgetTarget: number; // Where we should be at this point
-  owner: string;
-};
+  try {
+    return JSON.parse(value) as Record<string, any>;
+  } catch {
+    return {};
+  }
+}
 
-// Mock ventures data
-const initialVentures: Venture[] = [
-  { 
-    id: 1, 
-    name: "FinTech App", 
-    description: "Digital banking solution for SMEs",
-    currentStage: "mvp", 
-    budgetTotal: 2500000, 
-    budgetSpent: 1850000,
-    budgetTarget: 1500000,
-    owner: "Thabo M."
-  },
-  { 
-    id: 2, 
-    name: "AgriTech Platform", 
-    description: "Farm management and marketplace",
-    currentStage: "validation", 
-    budgetTotal: 1800000, 
-    budgetSpent: 420000,
-    budgetTarget: 500000,
-    owner: "Naledi K."
-  },
-  { 
-    id: 3, 
-    name: "EdTech Solution", 
-    description: "Online learning for African schools",
-    currentStage: "ideation", 
-    budgetTotal: 1200000, 
-    budgetSpent: 85000,
-    budgetTarget: 100000,
-    owner: "Mpumi D."
-  },
-  { 
-    id: 4, 
-    name: "HealthTech", 
-    description: "Telemedicine platform",
-    currentStage: "scale", 
-    budgetTotal: 4000000, 
-    budgetSpent: 3200000,
-    budgetTarget: 3500000,
-    owner: "Bongani S."
-  },
-  { 
-    id: 5, 
-    name: "LogiTech", 
-    description: "Last-mile delivery optimization",
-    currentStage: "pilot", 
-    budgetTotal: 2000000, 
-    budgetSpent: 1100000,
-    budgetTarget: 1200000,
-    owner: "Zweli G."
-  },
-];
+function parseTags(value?: string | null) {
+  if (!value) return [];
 
-// Car icon component for stage indicator
-const CarIcon = () => (
-  <svg viewBox="0 0 24 24" className="w-6 h-6 fill-purple-600">
-    <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-  </svg>
-);
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.filter((tag): tag is string => typeof tag === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function formatCurrency(amount: number, compact = false) {
+  if (!Number.isFinite(amount) || amount <= 0) return "R0";
+
+  return new Intl.NumberFormat("en-ZA", {
+    style: "currency",
+    currency: "ZAR",
+    notation: compact ? "compact" : "standard",
+    maximumFractionDigits: compact ? 1 : 0,
+  }).format(amount);
+}
+
+function getDaysToRevenueLabel(value?: string) {
+  if (!value || value === "0") return "Revenue generating";
+  if (value === "180") return "6 months";
+  if (value === "365") return "12 months";
+  if (value === "730") return "2+ years";
+  return `${value} days`;
+}
+
+function getStatusClasses(status: string) {
+  switch (status) {
+    case "Revenue generating":
+      return "bg-emerald-100 text-emerald-800 border-emerald-200";
+    case "Growth":
+      return "bg-green-100 text-green-800 border-green-200";
+    case "Launch":
+      return "bg-amber-100 text-amber-800 border-amber-200";
+    case "Beta":
+      return "bg-orange-100 text-orange-800 border-orange-200";
+    case "MVP Development":
+      return "bg-purple-100 text-purple-800 border-purple-200";
+    case "Validation":
+      return "bg-cyan-100 text-cyan-800 border-cyan-200";
+    case "Scaling":
+      return "bg-teal-100 text-teal-800 border-teal-200";
+    case "Exited":
+      return "bg-slate-100 text-slate-800 border-slate-200";
+    default:
+      return "bg-blue-100 text-blue-800 border-blue-200";
+  }
+}
 
 export default function NewFrontiers() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
   const [, navigate] = useLocation();
-  const [ventures, setVentures] = useState(initialVentures);
+  const utils = trpc.useUtils();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [newVenture, setNewVenture] = useState({ 
-    name: "", 
+  const [editingVenture, setEditingVenture] = useState<any>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [newVenture, setNewVenture] = useState({
+    title: "",
     description: "",
-    currentStage: "ideation", 
-    budgetTotal: "", 
-    owner: "" 
+    stageId: "",
+    value: "",
+    burnRate: "",
+    daysToRevenue: "0",
+    status: "Ideation",
+    tags: "",
   });
 
-  if (loading) {
+  const { data: venturesPipeline, isLoading } = trpc.pipelines.getCards.useQuery({ pipelineType: "ventures" });
+
+  const createCardMutation = trpc.pipelines.createCard.useMutation({
+    onSuccess: async () => {
+      await utils.pipelines.getCards.invalidate({ pipelineType: "ventures" });
+      toast.success("Venture created");
+      setIsAddDialogOpen(false);
+      setNewVenture({
+        title: "",
+        description: "",
+        stageId: "",
+        value: "",
+        burnRate: "",
+        daysToRevenue: "0",
+        status: "Ideation",
+        tags: "",
+      });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to create venture");
+    },
+  });
+
+  const moveCardMutation = trpc.pipelines.moveCard.useMutation({
+    onSuccess: async () => {
+      await utils.pipelines.getCards.invalidate({ pipelineType: "ventures" });
+      toast.success("Venture stage updated");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to move venture");
+    },
+  });
+
+  const deleteCardMutation = trpc.pipelines.deleteCard.useMutation({
+    onSuccess: async () => {
+      await utils.pipelines.getCards.invalidate({ pipelineType: "ventures" });
+      toast.success("Venture deleted");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to delete venture");
+    },
+  });
+
+  const stages = venturesPipeline?.stages ?? [];
+  const ventures = venturesPipeline?.cards ?? [];
+
+  const ventureCards = useMemo(
+    () =>
+      ventures.map((venture) => {
+        const metadata = parseMetadata(venture.metadata);
+        return {
+          ...venture,
+          metadata,
+          tagsList: parseTags(venture.tags),
+          burnRate: Number(metadata.burnRate || 0),
+          valuation: Number(venture.value || 0),
+          status: metadata.status || "Ideation",
+          daysToRevenue: String(metadata.daysToRevenue || "0"),
+        };
+      }),
+    [ventures],
+  );
+
+  const totalPortfolioValue = ventureCards.reduce((sum, venture) => sum + venture.valuation, 0);
+  const totalBurnRate = ventureCards.reduce((sum, venture) => sum + venture.burnRate, 0);
+  const revenueGeneratingCount = ventureCards.filter(
+    (venture) => venture.daysToRevenue === "0" || venture.status === "Revenue generating",
+  ).length;
+  const pilotOrBetterCount = ventureCards.filter((venture) => {
+    const stage = stages.find((item) => item.id === venture.stageId);
+    return stage ? stage.order >= 5 : false;
+  }).length;
+
+  const handleCreateVenture = async () => {
+    if (!newVenture.title.trim()) {
+      toast.error("Please enter a venture name");
+      return;
+    }
+
+    const fallbackStageId = stages[0]?.id;
+    const stageId = Number(newVenture.stageId || fallbackStageId);
+    if (!stageId) {
+      toast.error("No venture stages are configured yet");
+      return;
+    }
+
+    const tags = newVenture.tags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+
+    await createCardMutation.mutateAsync({
+      stageId,
+      title: newVenture.title.trim(),
+      description: newVenture.description.trim() || undefined,
+      value: newVenture.value.trim() || undefined,
+      tags: tags.length > 0 ? tags : undefined,
+      metadata: {
+        ...(newVenture.burnRate ? { burnRate: Number(newVenture.burnRate) } : {}),
+        daysToRevenue: newVenture.daysToRevenue,
+        status: newVenture.status,
+      },
+    });
+  };
+
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -129,309 +228,356 @@ export default function NewFrontiers() {
     );
   }
 
-  const addVenture = () => {
-    if (!newVenture.name || !newVenture.budgetTotal) {
-      toast.error("Please fill in venture name and budget");
-      return;
-    }
-    const venture: Venture = {
-      id: Math.max(...ventures.map(v => v.id)) + 1,
-      name: newVenture.name,
-      description: newVenture.description,
-      currentStage: newVenture.currentStage,
-      budgetTotal: parseInt(newVenture.budgetTotal),
-      budgetSpent: 0,
-      budgetTarget: 0,
-      owner: newVenture.owner || "Unassigned",
-    };
-    setVentures([...ventures, venture]);
-    setNewVenture({ name: "", description: "", currentStage: "ideation", budgetTotal: "", owner: "" });
-    setIsAddDialogOpen(false);
-    toast.success("Venture added");
-  };
-
-  const updateVentureStage = (ventureId: number, newStage: string) => {
-    setVentures(ventures.map(v => 
-      v.id === ventureId ? { ...v, currentStage: newStage } : v
-    ));
-    toast.success("Stage updated");
-  };
-
-  // Get stage position (0-5)
-  const getStagePosition = (stageId: string): number => {
-    const stage = STAGE_GATES.find(s => s.id === stageId);
-    return stage ? stage.position : 0;
-  };
-
-  // Calculate burn rate status
-  const getBurnStatus = (spent: number, target: number): { color: string; label: string } => {
-    const ratio = spent / target;
-    if (ratio <= 0.9) return { color: "bg-green-500", label: "Under budget" };
-    if (ratio <= 1.1) return { color: "bg-amber-500", label: "On budget" };
-    return { color: "bg-red-500", label: "Over budget" };
-  };
-
-  // Calculate totals
-  const totalBudget = ventures.reduce((sum, v) => sum + v.budgetTotal, 0);
-  const totalSpent = ventures.reduce((sum, v) => sum + v.budgetSpent, 0);
-
   return (
-    <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b bg-card">
-        <div className="container flex h-14 items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/engine")}>
-              <ArrowLeft className="h-5 w-5" />
+    <div className="min-h-screen bg-background">
+      <AppHeader />
+
+      <main className="container py-6 space-y-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="space-y-3">
+            <Button variant="ghost" size="sm" className="w-fit px-0 text-muted-foreground" onClick={() => navigate("/engine")}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to engine
             </Button>
-            <span className="text-xl font-bold text-foreground">Growth <span className="text-pink-500">F</span>arm</span>
+
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight text-[#5C4B3A] flex items-center gap-2">
+                <Rocket className="h-7 w-7 text-purple-600" />
+                New Frontiers
+              </h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Comprehensive ventures portfolio using the live ventures pipeline data.
+              </p>
+            </div>
           </div>
+
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Venture
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Add New Venture
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-lg">
               <DialogHeader>
-                <DialogTitle>Add New Venture</DialogTitle>
+                <DialogTitle>Add new venture</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <div>
-                  <label className="text-sm font-medium">Venture Name</label>
-                  <Input 
-                    value={newVenture.name} 
-                    onChange={(e) => setNewVenture({...newVenture, name: e.target.value})}
-                    placeholder="Venture name"
+
+              <div className="space-y-4 pt-2">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Venture name</label>
+                  <Input
+                    value={newVenture.title}
+                    onChange={(e) => setNewVenture({ ...newVenture, title: e.target.value })}
+                    placeholder="e.g. Briansfomo"
                   />
                 </div>
-                <div>
+
+                <div className="space-y-2">
                   <label className="text-sm font-medium">Description</label>
-                  <Input 
-                    value={newVenture.description} 
-                    onChange={(e) => setNewVenture({...newVenture, description: e.target.value})}
+                  <Textarea
+                    value={newVenture.description}
+                    onChange={(e) => setNewVenture({ ...newVenture, description: e.target.value })}
                     placeholder="Brief description"
+                    rows={3}
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium">Starting Stage</label>
-                  <Select value={newVenture.currentStage} onValueChange={(v) => setNewVenture({...newVenture, currentStage: v})}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STAGE_GATES.map(stage => (
-                        <SelectItem key={stage.id} value={stage.id}>{stage.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Starting stage</label>
+                    <Select
+                      value={newVenture.stageId}
+                      onValueChange={(value) => setNewVenture({ ...newVenture, stageId: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose stage" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {stages.map((stage) => (
+                          <SelectItem key={stage.id} value={String(stage.id)}>
+                            {stage.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Valuation (R)</label>
+                    <Input
+                      type="number"
+                      value={newVenture.value}
+                      onChange={(e) => setNewVenture({ ...newVenture, value: e.target.value })}
+                      placeholder="5000000"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium">Total Budget (R)</label>
-                  <Input 
-                    type="number"
-                    value={newVenture.budgetTotal} 
-                    onChange={(e) => setNewVenture({...newVenture, budgetTotal: e.target.value})}
-                    placeholder="Total budget"
+
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Monthly burn</label>
+                    <Input
+                      type="number"
+                      value={newVenture.burnRate}
+                      onChange={(e) => setNewVenture({ ...newVenture, burnRate: e.target.value })}
+                      placeholder="50000"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Days to revenue</label>
+                    <Select
+                      value={newVenture.daysToRevenue}
+                      onValueChange={(value) => setNewVenture({ ...newVenture, daysToRevenue: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0">Revenue generating</SelectItem>
+                        <SelectItem value="30">30 days</SelectItem>
+                        <SelectItem value="60">60 days</SelectItem>
+                        <SelectItem value="90">90 days</SelectItem>
+                        <SelectItem value="180">6 months</SelectItem>
+                        <SelectItem value="365">12 months</SelectItem>
+                        <SelectItem value="730">2+ years</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Status</label>
+                    <Select
+                      value={newVenture.status}
+                      onValueChange={(value) => setNewVenture({ ...newVenture, status: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Ideation">Ideation</SelectItem>
+                        <SelectItem value="Validation">Validation</SelectItem>
+                        <SelectItem value="MVP Development">MVP Development</SelectItem>
+                        <SelectItem value="Beta">Beta</SelectItem>
+                        <SelectItem value="Launch">Launch</SelectItem>
+                        <SelectItem value="Growth">Growth</SelectItem>
+                        <SelectItem value="Revenue generating">Revenue generating</SelectItem>
+                        <SelectItem value="Scaling">Scaling</SelectItem>
+                        <SelectItem value="Exited">Exited</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Tags</label>
+                  <Input
+                    value={newVenture.tags}
+                    onChange={(e) => setNewVenture({ ...newVenture, tags: e.target.value })}
+                    placeholder="proptech, education"
                   />
                 </div>
-                <div>
-                  <label className="text-sm font-medium">Owner</label>
-                  <Input 
-                    value={newVenture.owner} 
-                    onChange={(e) => setNewVenture({...newVenture, owner: e.target.value})}
-                    placeholder="Team member"
-                  />
-                </div>
-                <Button onClick={addVenture} className="w-full">Add Venture</Button>
+
+                <Button onClick={handleCreateVenture} className="w-full" disabled={createCardMutation.isPending}>
+                  {createCardMutation.isPending ? "Creating..." : "Create venture"}
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="container py-4">
-        <div className="mb-4">
-          <h2 className="text-2xl font-bold text-[#5C4B3A] flex items-center gap-2">
-            <Rocket className="h-6 w-6 text-purple-600" />
-            New Frontiers
-          </h2>
-          <p className="text-muted-foreground text-sm">Venture portfolio with stage gates and burn rate tracking</p>
-        </div>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <Card>
-            <CardContent className="p-3">
+            <CardContent className="p-4">
               <p className="text-xs text-muted-foreground">Active Ventures</p>
-              <p className="text-lg font-bold">{ventures.length}</p>
+              <p className="mt-2 text-2xl font-semibold">{ventureCards.length}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-3">
-              <p className="text-xs text-muted-foreground">Total Budget</p>
-              <p className="text-lg font-bold">R{(totalBudget / 1000000).toFixed(1)}M</p>
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">Portfolio Value</p>
+              <p className="mt-2 text-2xl font-semibold">{formatCurrency(totalPortfolioValue, true)}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-3">
-              <p className="text-xs text-muted-foreground">Total Spent</p>
-              <p className="text-lg font-bold">R{(totalSpent / 1000000).toFixed(1)}M</p>
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">Monthly Burn</p>
+              <p className="mt-2 text-2xl font-semibold">{formatCurrency(totalBurnRate, true)}</p>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-3">
-              <p className="text-xs text-muted-foreground">In Scale/Exit</p>
-              <p className="text-lg font-bold text-green-600">
-                {ventures.filter(v => v.currentStage === "scale" || v.currentStage === "exit").length}
-              </p>
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">Pilot or Better</p>
+              <p className="mt-2 text-2xl font-semibold text-green-700">{pilotOrBetterCount}</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Ventures List */}
-        <div className="space-y-4">
-          {ventures.map(venture => {
-            const stagePosition = getStagePosition(venture.currentStage);
-            const burnStatus = getBurnStatus(venture.budgetSpent, venture.budgetTarget);
-            const spentPercent = (venture.budgetSpent / venture.budgetTotal) * 100;
-            const targetPercent = (venture.budgetTarget / venture.budgetTotal) * 100;
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Full venture list</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {ventureCards.length === 0 ? (
+              <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                No ventures found in the live ventures pipeline yet.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {ventureCards.map((venture) => {
+                  const stage = stages.find((item) => item.id === venture.stageId);
+                  const runwayMonths =
+                    venture.valuation > 0 && venture.burnRate > 0
+                      ? Math.floor(venture.valuation / venture.burnRate)
+                      : 0;
 
-            return (
-              <Card key={venture.id} className="overflow-hidden">
-                <CardContent className="p-4">
-                  {/* Venture Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="font-bold text-lg">{venture.name}</h3>
-                      <p className="text-sm text-muted-foreground">{venture.description}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs">
-                        <User className="h-3 w-3 mr-1" />
-                        {venture.owner}
-                      </Badge>
-                      <Select 
-                        value={venture.currentStage} 
-                        onValueChange={(v) => updateVentureStage(venture.id, v)}
-                      >
-                        <SelectTrigger className="h-7 w-28 text-xs bg-purple-50">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {STAGE_GATES.map(stage => (
-                            <SelectItem key={stage.id} value={stage.id}>{stage.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+                  return (
+                    <Card key={venture.id} className="overflow-hidden border border-slate-200">
+                      <CardContent className="p-4 space-y-4">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="text-lg font-semibold text-foreground">{venture.title}</h3>
+                              <Badge variant="outline" className={getStatusClasses(venture.status)}>
+                                {venture.status}
+                              </Badge>
+                              {stage && <Badge variant="outline">Stage: {stage.name}</Badge>}
+                              <Badge variant="outline">{getDaysToRevenueLabel(venture.daysToRevenue)}</Badge>
+                            </div>
 
-                  {/* Stage Gates Bar */}
-                  <div className="mb-4">
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Stage Progress</p>
-                    <div className="relative">
-                      {/* Stage bar background */}
-                      <div className="h-8 bg-slate-100 rounded-full flex overflow-hidden">
-                        {STAGE_GATES.map((stage, i) => (
-                          <div 
-                            key={stage.id}
-                            className={`flex-1 flex items-center justify-center text-[10px] font-medium border-r border-white last:border-r-0 ${
-                              i <= stagePosition ? 'bg-purple-200 text-purple-800' : 'text-slate-400'
-                            }`}
-                          >
-                            {stage.name}
+                            <p className="text-sm text-muted-foreground">
+                              {venture.description || "No description added yet."}
+                            </p>
+
+                            <div className="flex flex-wrap gap-2">
+                              {venture.tagsList.length > 0 ? (
+                                venture.tagsList.map((tag) => (
+                                  <Badge key={tag} variant="secondary">
+                                    {tag}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="text-xs text-muted-foreground">No tags</span>
+                              )}
+                            </div>
                           </div>
-                        ))}
-                      </div>
-                      {/* Car indicator */}
-                      <div 
-                        className="absolute top-0 transition-all duration-300"
-                        style={{ 
-                          left: `calc(${(stagePosition / (STAGE_GATES.length - 1)) * 100}% - 12px)`,
-                          transform: 'translateY(-8px)'
-                        }}
-                      >
-                        <CarIcon />
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Burn Rate Bar */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs font-medium text-muted-foreground">Burn Rate</p>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className={`text-[10px] ${burnStatus.color === 'bg-red-500' ? 'border-red-300 text-red-600' : burnStatus.color === 'bg-amber-500' ? 'border-amber-300 text-amber-600' : 'border-green-300 text-green-600'}`}>
-                          {burnStatus.label}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          R{(venture.budgetSpent / 1000000).toFixed(2)}M / R{(venture.budgetTotal / 1000000).toFixed(2)}M
-                        </span>
-                      </div>
-                    </div>
-                    <div className="relative h-6 bg-slate-100 rounded-full overflow-hidden">
-                      {/* Spent bar */}
-                      <div 
-                        className={`absolute left-0 top-0 h-full ${burnStatus.color} transition-all duration-300`}
-                        style={{ width: `${Math.min(spentPercent, 100)}%` }}
-                      />
-                      {/* Target line */}
-                      <div 
-                        className="absolute top-0 h-full w-0.5 bg-slate-800"
-                        style={{ left: `${targetPercent}%` }}
-                      />
-                      {/* Target label */}
-                      <div 
-                        className="absolute top-0 text-[9px] font-medium text-slate-600 bg-white px-1 rounded"
-                        style={{ left: `${targetPercent}%`, transform: 'translateX(-50%) translateY(-100%)' }}
-                      >
-                        Target
-                      </div>
-                      {/* Budget total on right */}
-                      <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-600">
-                        R{(venture.budgetTotal / 1000000).toFixed(1)}M
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Select
+                              value={String(venture.stageId)}
+                              onValueChange={(value) => moveCardMutation.mutate({ cardId: venture.id, newStageId: Number(value) })}
+                            >
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {stages.map((stageItem) => (
+                                  <SelectItem key={stageItem.id} value={String(stageItem.id)}>
+                                    {stageItem.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+
+                            <Link href={`/venture/${venture.id}`}>
+                              <Button variant="outline">Open</Button>
+                            </Link>
+
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setEditingVenture(venture);
+                                setIsEditOpen(true);
+                              }}
+                            >
+                              <Edit2 className="mr-2 h-4 w-4" />
+                              Edit
+                            </Button>
+
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="destructive">
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete venture?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This will permanently remove {venture.title} from the ventures pipeline.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => deleteCardMutation.mutate({ id: venture.id })}>
+                                    Delete venture
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-3 md:grid-cols-4">
+                          <div className="rounded-xl bg-slate-50 p-3">
+                            <p className="text-xs text-muted-foreground">Valuation</p>
+                            <p className="mt-2 text-base font-semibold">{formatCurrency(venture.valuation)}</p>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 p-3">
+                            <p className="text-xs text-muted-foreground">Monthly burn</p>
+                            <p className="mt-2 text-base font-semibold">{formatCurrency(venture.burnRate, true)}</p>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 p-3">
+                            <p className="text-xs text-muted-foreground">Runway</p>
+                            <p className="mt-2 text-base font-semibold">
+                              {runwayMonths > 0 ? `${runwayMonths} months` : "Not available"}
+                            </p>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 p-3">
+                            <p className="text-xs text-muted-foreground">Owner</p>
+                            <p className="mt-2 flex items-center gap-1 text-base font-semibold">
+                              <User className="h-4 w-4 text-slate-400" />
+                              {venture.ownerId ? `User #${venture.ownerId}` : "Unassigned"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="rounded-xl bg-purple-50 p-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="text-xs text-purple-700">Commercial readiness</p>
+                              <p className="mt-1 text-sm font-medium text-purple-950">
+                                {getDaysToRevenueLabel(venture.daysToRevenue)}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2 text-purple-700">
+                              <TrendingUp className="h-4 w-4" />
+                              <span className="text-xs">
+                                {venture.daysToRevenue === "0" ? "Already generating revenue" : `${revenueGeneratingCount} revenue-generating ventures in portfolio`}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </main>
 
-      {/* Bottom Navigation (Mobile) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-card md:hidden">
-        <div className="grid grid-cols-6 h-16">
-          <Link href="/" className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground">
-            <HomeIcon className="h-5 w-5" />
-            <span className="text-[10px]">Home</span>
-          </Link>
-          <Link href="/dashboard" className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground">
-            <LayoutDashboard className="h-5 w-5" />
-            <span className="text-[10px]">Dashboard</span>
-          </Link>
-          <Link href="/engine" className="flex flex-col items-center justify-center gap-1 text-primary">
-            <Cog className="h-5 w-5" />
-            <span className="text-[10px] font-medium">Engine</span>
-          </Link>
-          <Link href="/monthly" className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground">
-            <Calendar className="h-5 w-5" />
-            <span className="text-[10px]">Monthly</span>
-          </Link>
-          <Link href="/weekly" className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground">
-            <CalendarDays className="h-5 w-5" />
-            <span className="text-[10px]">Weekly</span>
-          </Link>
-          <Link href="/settings" className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground">
-            <Settings className="h-5 w-5" />
-            <span className="text-[10px]">Settings</span>
-          </Link>
-        </div>
-      </nav>
+      <VentureEditModal
+        isOpen={isEditOpen}
+        onClose={() => {
+          setIsEditOpen(false);
+          setEditingVenture(null);
+        }}
+        venture={editingVenture}
+      />
     </div>
   );
 }

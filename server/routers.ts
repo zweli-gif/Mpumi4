@@ -348,6 +348,7 @@ export const appRouter = router({
         ownerId: z.number().optional(),
         dueDate: z.date().optional(),
         tags: z.array(z.string()).optional(),
+        metadata: z.record(z.string(), z.any()).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const card = await db.createPipelineCard({
@@ -358,6 +359,7 @@ export const appRouter = router({
           ownerId: input.ownerId,
           dueDate: input.dueDate,
           tags: input.tags ? JSON.stringify(input.tags) : null,
+          metadata: input.metadata ? JSON.stringify(input.metadata) : null,
           position: 0,
         });
 
