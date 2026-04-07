@@ -323,6 +323,24 @@ export const appRouter = router({
         return db.getPipelineStages(input.pipelineType);
       }),
 
+    createStage: protectedProcedure
+      .input(z.object({
+        pipelineType: z.enum(["bd", "ventures", "studio", "clients", "finance", "admin"]),
+        name: z.string().min(1),
+        order: z.number(),
+        probabilityWeight: z.number().optional(),
+        color: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return db.createPipelineStage({
+          pipelineType: input.pipelineType,
+          name: input.name,
+          order: input.order,
+          probabilityWeight: input.probabilityWeight ?? 0,
+          color: input.color ?? null,
+        });
+      }),
+
     // Get all cards for a pipeline type
     getCards: protectedProcedure
       .input(z.object({

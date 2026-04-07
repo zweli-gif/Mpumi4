@@ -97,6 +97,24 @@ function getStatusClasses(status: string) {
   }
 }
 
+const DEFAULT_VENTURE_STAGES = [
+  { name: "Idea Dump", order: 1, probabilityWeight: 5, color: "#D4A5A5" },
+  { name: "Concept", order: 2, probabilityWeight: 20, color: "#D4A5A5" },
+  { name: "Discovery", order: 3, probabilityWeight: 40, color: "#D4A5A5" },
+  { name: "MVP Build", order: 4, probabilityWeight: 60, color: "#D4A5A5" },
+  { name: "Pilot", order: 5, probabilityWeight: 80, color: "#D4A5A5" },
+  { name: "Live", order: 6, probabilityWeight: 90, color: "#4A7C59" },
+  { name: "Scaling", order: 7, probabilityWeight: 100, color: "#4A7C59" },
+];
+
+const LEGACY_SAMPLE_VENTURES = [
+  { name: "FinTech App", description: "Digital banking solution for SMEs", stage: "MVP", owner: "Thabo M." },
+  { name: "AgriTech Platform", description: "Farm management and marketplace", stage: "Validation", owner: "Naledi K." },
+  { name: "EdTech Solution", description: "Online learning for African schools", stage: "Ideation", owner: "Mpumi D." },
+  { name: "HealthTech", description: "Telemedicine platform", stage: "Scale", owner: "Bongani S." },
+  { name: "LogiTech", description: "Last-mile delivery optimization", stage: "Pilot", owner: "Zweli G." },
+];
+
 export default function NewFrontiers() {
   const { loading } = useAuth();
   const [, navigate] = useLocation();
@@ -135,6 +153,12 @@ export default function NewFrontiers() {
     },
     onError: (error) => {
       toast.error(error.message || "Failed to create venture");
+    },
+  });
+
+  const createStageMutation = trpc.pipelines.createStage.useMutation({
+    onError: (error) => {
+      toast.error(error.message || "Failed to set up venture stages");
     },
   });
 
@@ -191,6 +215,23 @@ export default function NewFrontiers() {
   const handleCreateVenture = async () => {
     if (!newVenture.title.trim()) {
       toast.error("Please enter a venture name");
+      return;
+    }
+
+    if (stages.length === 0) {
+      for (const stage of DEFAULT_VENTURE_STAGES) {
+        await createStageMutation.mutateAsync({
+          pipelineType: "ventures",
+          name: stage.name,
+          order: stage.order,
+          probabilityWeight: stage.probabilityWeight,
+          color: stage.color,
+        });
+      }
+
+      await utils.pipelines.getCards.invalidate({ pipelineType: "ventures" });
+      await utils.pipelines.getStages.invalidate({ pipelineType: "ventures" });
+      toast.success("Default venture stages created. Click create venture again to add your first venture.");
       return;
     }
 
@@ -379,8 +420,12 @@ export default function NewFrontiers() {
                   />
                 </div>
 
-                <Button onClick={handleCreateVenture} className="w-full" disabled={createCardMutation.isPending}>
-                  {createCardMutation.isPending ? "Creating..." : "Create venture"}
+                <Button
+                  onClick={handleCreateVenture}
+                  className="w-full"
+                  disabled={createCardMutation.isPending || createStageMutation.isPending}
+                >
+                  {createCardMutation.isPending || createStageMutation.isPending ? "Creating..." : "Create venture"}
                 </Button>
               </div>
             </DialogContent>
@@ -420,8 +465,30 @@ export default function NewFrontiers() {
           </CardHeader>
           <CardContent>
             {ventureCards.length === 0 ? (
-              <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-                No ventures found in the live ventures pipeline yet.
+              <div className="space-y-4">
+                <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                  No ventures found in the live ventures pipeline yet.
+                </div>
+                <Card className="border border-amber-200 bg-amber-50/60">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Legacy sample ventures</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      These are the prototype ventures from the older mock New Frontiers page. They are read-only and separate from the live ventures pipeline.
+                    </p>
+                    {LEGACY_SAMPLE_VENTURES.map((venture) => (
+                      <div key={venture.name} className="rounded-lg border border-amber-200 bg-white/80 p-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-medium text-foreground">{venture.name}</p>
+                          <Badge variant="outline">{venture.stage}</Badge>
+                          <Badge variant="secondary">{venture.owner}</Badge>
+                        </div>
+                        <p className="mt-2 text-sm text-muted-foreground">{venture.description}</p>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
               </div>
             ) : (
               <div className="space-y-4">
