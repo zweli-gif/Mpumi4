@@ -6,7 +6,7 @@ import path from "path";
 export async function setupVite(app: Express, server: Server) {
   const { createServer: createViteServer } = await import("vite");
   const vite = await createViteServer({
-    configFile: true,
+    configFile: path.resolve(process.cwd(), "vite.config.ts"),
     server: {
       middlewareMode: true,
       hmr: { server },

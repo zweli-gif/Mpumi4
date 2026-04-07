@@ -15,14 +15,15 @@ interface VentureEditModalProps {
   venture: {
     id: number;
     title: string;
-    description?: string;
-    value?: string;
-    metadata?: string;
+    description?: string | null;
+    value?: string | null;
+    metadata?: string | null;
   } | null;
   onSuccess?: () => void;
 }
 
 export function VentureEditModal({ isOpen, onClose, venture, onSuccess }: VentureEditModalProps) {
+  const utils = trpc.useUtils();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -35,7 +36,8 @@ export function VentureEditModal({ isOpen, onClose, venture, onSuccess }: Ventur
   const [isLoading, setIsLoading] = useState(false);
 
   const updateCardMutation = trpc.pipelines.updateCard.useMutation({
-    onSuccess: () => {
+    onSuccess: async () => {
+      await utils.pipelines.getCards.invalidate({ pipelineType: "ventures" });
       toast.success("Venture updated successfully");
       onClose();
       onSuccess?.();
@@ -48,7 +50,14 @@ export function VentureEditModal({ isOpen, onClose, venture, onSuccess }: Ventur
   // Parse metadata when venture changes
   useEffect(() => {
     if (venture) {
-      const metadata = venture.metadata ? JSON.parse(venture.metadata) : {};
+      let metadata: Record<string, any> = {};
+      if (venture.metadata) {
+        try {
+          metadata = JSON.parse(venture.metadata);
+        } catch {
+          metadata = {};
+        }
+      }
       setFormData({
         title: venture.title || "",
         description: venture.description || "",
@@ -56,6 +65,15 @@ export function VentureEditModal({ isOpen, onClose, venture, onSuccess }: Ventur
         burnRate: metadata.burnRate?.toString() || "",
         daysToRevenue: metadata.daysToRevenue || "0",
         status: metadata.status || "Ideation",
+      });
+    } else {
+      setFormData({
+        title: "",
+        description: "",
+        value: "",
+        burnRate: "",
+        daysToRevenue: "0",
+        status: "Ideation",
       });
     }
   }, [venture, isOpen]);

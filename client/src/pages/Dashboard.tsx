@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Home, Users, Loader2, ArrowLeft, LayoutDashboard, Cog, Calendar, CalendarDays, Settings, TrendingUp, Rocket, Palette, AlertTriangle, DollarSign, Banknote, Receipt, CheckCircle2, Clock, AlertCircle, XCircle, ChevronDown, Edit2 } from "lucide-react";
+import { Home, Users, Loader2, ArrowLeft, LayoutDashboard, Cog, Calendar, CalendarDays, Settings, TrendingUp, Rocket, Palette, AlertTriangle, DollarSign, Banknote, Receipt, CheckCircle2, Clock, AlertCircle, XCircle, ChevronDown, Edit2, ArrowUpRight } from "lucide-react";
 import { Link } from "wouter";
 import AppHeader from "@/components/AppHeader";
 import { useState } from "react";
@@ -25,13 +25,13 @@ import {
 import { VentureEditModal } from "@/components/VentureEditModal";
 
 export default function Dashboard() {
+  const utils = trpc.useUtils();
   const { user, loading, isAuthenticated } = useAuth();
   const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingVenture, setEditingVenture] = useState<any>(null);
   const [isVentureEditOpen, setIsVentureEditOpen] = useState(false);
-  const [ventureRefreshKey, setVentureRefreshKey] = useState(0);
 
   // Get current week number
   function getWeekNumber(date: Date): number {
@@ -622,9 +622,15 @@ export default function Dashboard() {
                           key={card.id}
                           className="text-xs p-2 bg-purple-50 rounded border border-purple-200 flex items-center justify-between hover:bg-purple-100 transition"
                         >
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-purple-900 truncate">{card.title}</p>
-                          </div>
+                          <Link href={`/venture/${card.id}`} className="flex flex-1 min-w-0 items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="font-medium text-purple-900 truncate">{card.title}</p>
+                              <p className="text-[10px] text-purple-700/80 truncate">
+                                Open venture profile
+                              </p>
+                            </div>
+                            <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-purple-700" />
+                          </Link>
                           <Button
                             size="sm"
                             variant="ghost"
@@ -703,7 +709,7 @@ export default function Dashboard() {
         }}
         venture={editingVenture}
         onSuccess={() => {
-          setVentureRefreshKey(prev => prev + 1);
+          utils.pipelines.getCards.invalidate({ pipelineType: "ventures" });
         }}
       />
     </div>
