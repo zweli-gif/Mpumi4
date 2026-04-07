@@ -267,6 +267,10 @@ export default function Settings() {
       toast.success("KPI created");
       refetchGoals();
       setAddKpiDialogOpen(false);
+      setAddKpiName("");
+      setAddKpiTarget("");
+      setAddKpiUnit("#");
+      setAddKpiOwner("");
     },
     onError: (error) => {
       toast.error(error.message || "Failed to create KPI");
@@ -1488,14 +1492,14 @@ export default function Settings() {
                 </div>
                 <div className="space-y-2">
                   <Label>Owner</Label>
-                  <Select value={addKpiOwner} onValueChange={setAddKpiOwner}>
+                  <Select value={addKpiOwner || "__none__"} onValueChange={(v) => setAddKpiOwner(v === "__none__" ? "" : v)}>
                     <SelectTrigger>
                       <SelectValue placeholder="— Unassigned —" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">— Unassigned —</SelectItem>
+                      <SelectItem value="__none__">— Unassigned —</SelectItem>
                       {allUsers?.map((u: any) => (
-                        <SelectItem key={u.id} value={u.name || u.email || ""}>
+                        <SelectItem key={u.id} value={u.name || u.email || `user-${u.id}`}>
                           {u.name || u.email}
                         </SelectItem>
                       ))}
