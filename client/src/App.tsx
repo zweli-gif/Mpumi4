@@ -25,6 +25,7 @@ import { trpc } from "./lib/trpc";
 import { useEffect, useState } from "react";
 import { QuickAddActivity } from "./components/QuickAddActivity";
 import { supabase } from "./lib/supabase";
+import { ALLOWED_SIGN_IN_EMAIL_DOMAINS, isAllowedSignInEmail } from "@shared/const";
 
 function OnboardingGuard({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
@@ -50,12 +51,15 @@ function Router() {
   const [session, setSession] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const { data: user } = trpc.auth.me.useQuery();
+  const allowedDomainsMessage = ALLOWED_SIGN_IN_EMAIL_DOMAINS
+    .map(domain => `@${domain}`)
+    .join(" or ");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session && !session.user.email?.endsWith("@thirdspace.africa")) {
+      if (session && !isAllowedSignInEmail(session.user.email)) {
         supabase.auth.signOut();
-        toast.error("Access restricted. Please sign in with a @thirdspace.africa email address.");
+        toast.error(`Access restricted. Please sign in with a ${allowedDomainsMessage} email address.`);
         setAuthLoading(false);
         return;
       }
@@ -64,16 +68,16 @@ function Router() {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session && !session.user.email?.endsWith("@thirdspace.africa")) {
+      if (session && !isAllowedSignInEmail(session.user.email)) {
         supabase.auth.signOut();
-        toast.error("Access restricted. Please sign in with a @thirdspace.africa email address.");
+        toast.error(`Access restricted. Please sign in with a ${allowedDomainsMessage} email address.`);
         return;
       }
       setSession(session);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [allowedDomainsMessage]);
 
   if (authLoading) return null;
 

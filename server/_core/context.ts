@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import type { User } from "../../drizzle/schema";
+import { isAllowedSignInEmail } from "@shared/const";
 import * as db from "../db";
 import { createClient } from "@supabase/supabase-js";
 
@@ -22,10 +23,10 @@ export async function createContext({ req, res }: { req: Request; res: Response 
       const { data: { user: supabaseUser } } = await supabase.auth.getUser(token);
       if (supabaseUser) {
         const email = supabaseUser.email || "";
-        if (!email.endsWith("@thirdspace.africa")) {
+        if (!isAllowedSignInEmail(email)) {
           return { req, res, user: null };
         }
-        user = await db.getUserByOpenId(supabaseUser.id);
+        user = (await db.getUserByOpenId(supabaseUser.id)) ?? null;
         if (!user) {
           await db.upsertUser({
             openId: supabaseUser.id,
@@ -34,7 +35,7 @@ export async function createContext({ req, res }: { req: Request; res: Response 
             loginMethod: supabaseUser.app_metadata?.provider || null,
             lastSignedIn: new Date(),
           });
-          user = await db.getUserByOpenId(supabaseUser.id);
+          user = (await db.getUserByOpenId(supabaseUser.id)) ?? null;
         }
         // Ensure designated admin accounts always have admin role
         const ADMIN_EMAILS = ['albert@thirdspace.africa'];
